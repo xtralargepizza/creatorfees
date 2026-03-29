@@ -66,11 +66,11 @@ export default function TokenPage() {
 
   if (error) return (
     <section className="px-6 md:px-8 pt-4 pb-16">
-      <div className="max-w-md mx-auto border-2 border-red-200 bg-red-50 p-10 text-center">
-        <p className="text-[13px] font-bold text-red-700 mb-2">Error</p>
-        <p className="text-[11px] text-red-600">{error}</p>
-        <p className="mt-3 font-mono text-[10px] text-red-400 break-all">{mint}</p>
-        <a href="/" className="inline-block mt-4 py-2 px-6 border-2 border-red-300 text-[10px] font-bold uppercase tracking-[0.1em]">Back</a>
+      <div className="max-w-md mx-auto border-2 border-[var(--error)]/30 bg-[var(--error)]/10 p-10 text-center">
+        <p className="text-[13px] font-bold text-[var(--error)] mb-2">Error</p>
+        <p className="text-[11px] text-[var(--error)]">{error}</p>
+        <p className="mt-3 font-mono text-[10px] text-[var(--error)]/60 break-all">{mint}</p>
+        <a href="/" className="inline-block mt-4 py-2 px-6 border-2 border-[var(--error)]/30 text-[10px] font-bold uppercase tracking-[0.1em]">Back</a>
       </div>
     </section>
   );
@@ -90,7 +90,7 @@ export default function TokenPage() {
       {/* Back */}
       <a
         href="/"
-        className="inline-flex items-center gap-2 mb-8 py-2 px-4 border border-[#E8E9E1] bg-[#FFFFFF] text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] hover:text-[var(--text)] hover:border-[var(--text)] transition-colors"
+        className="inline-flex items-center gap-2 mb-8 py-2 px-4 border border-[var(--border)] bg-[var(--card)] text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-2)] hover:text-[var(--text)] hover:border-[var(--text)] transition-colors"
       >
         <span className="material-symbols-outlined text-base">arrow_back</span>
         Back to Dashboard
@@ -98,7 +98,7 @@ export default function TokenPage() {
 
       {/* Hero Header */}
       <div className="mb-12">
-        <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-variant)] mb-4">
+        <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-2)] mb-4">
           Token Analytics
         </h2>
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
@@ -108,25 +108,25 @@ export default function TokenPage() {
               <div>
                 <h1 className="text-[40px] md:text-[56px] font-bold leading-[1] tracking-tighter text-[var(--text)]">
                   {feesSol > 0 ? fmtSol(feesLam) : "0"}{" "}
-                  <span className="text-[#00D62B]">SOL</span>
+                  <span className="text-[var(--green)]">SOL</span>
                 </h1>
                 {creator && (
-                  <p className="text-[12px] text-[var(--text-variant)] mt-1">
+                  <p className="text-[12px] text-[var(--text-2)] mt-1">
                     Created by{" "}
-                    <a href={`https://x.com/${creator.twitterUsername}`} target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--link)] hover:text-[#00D62B] transition-colors">
+                    <a href={`https://x.com/${creator.twitterUsername}`} target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--link)] hover:text-[var(--green)] transition-colors">
                       @{creator.twitterUsername}
                     </a>
                   </p>
                 )}
               </div>
             </div>
-            <p className="font-mono text-[10px] text-[var(--text-dim)] break-all mt-2">{mint}</p>
+            <p className="font-mono text-[10px] text-[var(--text-3)] break-all mt-2">{mint}</p>
           </div>
           <a
             href={`https://bags.fm/${mint}?ref=crisnewtonx`}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 bg-[#00D62B] text-white font-bold py-4 px-8 text-[13px] tracking-[0.1em] uppercase hover:brightness-110 active:scale-95 transition-all text-center shadow-[0_2px_8px_rgba(0,214,43,0.3)]"
+            className="shrink-0 bg-[var(--green)] text-white font-bold py-4 px-8 text-[13px] tracking-[0.1em] uppercase hover:brightness-110 active:scale-95 transition-all text-center shadow-[0_2px_8px_rgba(0,214,43,0.3)]"
           >
             View on Bags.fm
           </a>
@@ -143,9 +143,9 @@ export default function TokenPage() {
 
       {/* Distribution Progress */}
       {feesLam > 0 && totalClaimed > 0 && (
-        <div className="bg-[#FFFFFF] border border-[#E8E9E1] p-6 md:p-8 mb-12">
+        <div className="bg-[var(--card)] border border-[var(--border)] p-6 md:p-8 mb-12">
           <div className="flex justify-between mb-4">
-            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-2)]">
               Claim Progress
             </p>
             <p className="text-[14px] font-bold text-[var(--text)]">{claimPct.toFixed(1)}%</p>
@@ -153,8 +153,8 @@ export default function TokenPage() {
           <div className="progress-bar h-3">
             <div className="progress-fill" style={{ width: `${Math.min(100, claimPct)}%` }} />
           </div>
-          <div className="mt-3 flex justify-between text-[11px] text-[var(--text-variant)]">
-            <span>Claimed: <span className="font-bold text-[#00D62B]">{fmtSol(totalClaimed)} SOL</span></span>
+          <div className="mt-3 flex justify-between text-[11px] text-[var(--text-2)]">
+            <span>Claimed: <span className="font-bold text-[var(--green)]">{fmtSol(totalClaimed)} SOL</span></span>
             <span>Total: <span className="font-bold">{fmtSol(feesLam)} SOL</span></span>
           </div>
         </div>
@@ -163,34 +163,34 @@ export default function TokenPage() {
       {/* Fee Share Config */}
       {data.creators.length > 0 && (
         <div className="mb-12">
-          <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-variant)] mb-6">
+          <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-2)] mb-6">
             Fee Share Configuration
           </h2>
           <div className="space-y-1">
             {data.creators.map((c, i) => (
-              <div key={i} className="bg-[#FFFFFF] border border-[#E8E9E1] p-5 md:p-6 flex items-center justify-between">
+              <div key={i} className="bg-[var(--card)] border border-[var(--border)] p-5 md:p-6 flex items-center justify-between">
                 <div className="flex items-center gap-4 md:gap-5">
                   {c.pfp ? (
                     <img src={c.pfp} alt="" className="w-12 h-12" />
                   ) : (
-                    <div className="w-12 h-12 bg-[#00D62B]/10 flex items-center justify-center text-[16px] font-bold text-[#00D62B]">
+                    <div className="w-12 h-12 bg-[var(--green)]/10 flex items-center justify-center text-[16px] font-bold text-[var(--green)]">
                       {c.username.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <a href={`https://x.com/${c.twitterUsername}`} target="_blank" rel="noopener noreferrer" className="text-[13px] font-bold text-[var(--link)] hover:text-[#00D62B] transition-colors">
+                      <a href={`https://x.com/${c.twitterUsername}`} target="_blank" rel="noopener noreferrer" className="text-[13px] font-bold text-[var(--link)] hover:text-[var(--green)] transition-colors">
                         @{c.twitterUsername || c.username}
                       </a>
-                      {c.isCreator && <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] bg-[#00D62B]/10 text-[#00A020]">Creator</span>}
-                      {c.isAdmin && <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] bg-blue-500/10 text-blue-700">Admin</span>}
+                      {c.isCreator && <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] bg-[var(--green)]/10 text-[var(--green)]">Creator</span>}
+                      {c.isAdmin && <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] bg-blue-500/15 text-blue-400">Admin</span>}
                     </div>
-                    <p className="text-[11px] text-[var(--text-variant)] mt-1">
+                    <p className="text-[11px] text-[var(--text-2)] mt-1">
                       {c.provider} &middot; <span className="font-bold text-[var(--text)]">{(c.royaltyBps / 100).toFixed(0)}% share</span>
                     </p>
                   </div>
                 </div>
-                <span className="font-mono text-[10px] text-[var(--text-dim)] hidden sm:inline">{c.wallet.slice(0, 6)}...{c.wallet.slice(-4)}</span>
+                <span className="font-mono text-[10px] text-[var(--text-3)] hidden sm:inline">{c.wallet.slice(0, 6)}...{c.wallet.slice(-4)}</span>
               </div>
             ))}
           </div>
@@ -200,7 +200,7 @@ export default function TokenPage() {
       {/* Claim Stats */}
       {data.claimStats.length > 0 && (
         <div className="mb-12">
-          <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-variant)] mb-6">
+          <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-2)] mb-6">
             Claim Statistics
           </h2>
           <div className="space-y-1">
@@ -208,15 +208,15 @@ export default function TokenPage() {
               const claimed = parseInt(stat.totalClaimed || "0");
               const pct = feesLam > 0 ? (claimed / feesLam) * 100 : 0;
               return (
-                <div key={i} className="bg-[#FFFFFF] border border-[#E8E9E1] p-5 md:p-6">
+                <div key={i} className="bg-[var(--card)] border border-[var(--border)] p-5 md:p-6">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="font-mono text-[11px] text-[var(--text-variant)]">{stat.wallet.slice(0, 8)}...{stat.wallet.slice(-6)}</span>
-                    <span className="text-[16px] md:text-[20px] font-bold text-[#00D62B]">{fmtSol(claimed)} SOL</span>
+                    <span className="font-mono text-[11px] text-[var(--text-2)]">{stat.wallet.slice(0, 8)}...{stat.wallet.slice(-6)}</span>
+                    <span className="text-[16px] md:text-[20px] font-bold text-[var(--green)]">{fmtSol(claimed)} SOL</span>
                   </div>
                   <div className="progress-bar h-3">
                     <div className="progress-fill" style={{ width: `${Math.min(100, pct)}%` }} />
                   </div>
-                  <p className="mt-2 text-right text-[10px] font-bold text-[var(--text-dim)]">{pct.toFixed(1)}% of fees</p>
+                  <p className="mt-2 text-right text-[10px] font-bold text-[var(--text-3)]">{pct.toFixed(1)}% of fees</p>
                 </div>
               );
             })}
@@ -227,7 +227,7 @@ export default function TokenPage() {
       {/* Claim History / Activity Feed */}
       {events.length > 0 && (
         <div className="pb-8">
-          <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-variant)] mb-6">
+          <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-2)] mb-6">
             Claim History
           </h2>
           <div className="space-y-1">
@@ -237,25 +237,25 @@ export default function TokenPage() {
                 href={`https://solscan.io/tx/${ev.signature}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-5 md:p-6 bg-[#FFFFFF] border border-[#E8E9E1] transition-colors hover:bg-[var(--surface)] block"
+                className="flex items-center justify-between p-5 md:p-6 bg-[var(--card)] border border-[var(--border)] transition-colors hover:bg-[var(--surface)] block"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[#00D62B]/10 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[#00D62B] text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  <div className="w-12 h-12 bg-[var(--green)]/10 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[var(--green)] text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
                       payments
                     </span>
                   </div>
                   <div>
                     <p className="text-[12px] font-bold text-[var(--text)] uppercase">Fee Claim</p>
-                    <p className="text-[10px] text-[var(--text-variant)] uppercase mt-0.5">
+                    <p className="text-[10px] text-[var(--text-2)] uppercase mt-0.5">
                       {ago(ev.timestamp)} &middot; {ev.wallet.slice(0, 6)}...{ev.wallet.slice(-4)}
-                      {ev.isCreator && <span className="ml-1 text-[#00D62B]">&middot; Creator</span>}
+                      {ev.isCreator && <span className="ml-1 text-[var(--green)]">&middot; Creator</span>}
                     </p>
                   </div>
                 </div>
                 <div className="text-right shrink-0 ml-4">
-                  <p className="text-[18px] md:text-[22px] font-bold text-[#00D62B] leading-tight">+{fmtSol(parseInt(ev.amount))} SOL</p>
-                  <p className="text-[9px] text-[var(--text-variant)] uppercase mt-0.5">Fee Claimed</p>
+                  <p className="text-[18px] md:text-[22px] font-bold text-[var(--green)] leading-tight">+{fmtSol(parseInt(ev.amount))} SOL</p>
+                  <p className="text-[9px] text-[var(--text-2)] uppercase mt-0.5">Fee Claimed</p>
                 </div>
               </a>
             ))}
@@ -265,9 +265,9 @@ export default function TokenPage() {
 
       {/* Empty State */}
       {data.creators.length === 0 && data.claimStats.length === 0 && events.length === 0 && feesLam === 0 && (
-        <div className="bg-[#FFFFFF] border border-[#E8E9E1] p-12 text-center">
-          <p className="text-[13px] font-bold text-[var(--text-variant)]">No data available</p>
-          <p className="mt-1 text-[11px] text-[var(--text-dim)]">This token may be new or not a Bags token.</p>
+        <div className="bg-[var(--card)] border border-[var(--border)] p-12 text-center">
+          <p className="text-[13px] font-bold text-[var(--text-2)]">No data available</p>
+          <p className="mt-1 text-[11px] text-[var(--text-3)]">This token may be new or not a Bags token.</p>
         </div>
       )}
     </section>
@@ -275,12 +275,12 @@ export default function TokenPage() {
 }
 
 function KPI({ label, value, sub, green, warn }: { label: string; value: string; sub?: string; green?: boolean; warn?: boolean }) {
-  const c = green ? "text-[#00D62B]" : warn ? "text-yellow-600" : "text-[var(--text)]";
+  const c = green ? "text-[var(--green)]" : warn ? "text-yellow-600" : "text-[var(--text)]";
   return (
-    <div className="bg-[#FFFFFF] border border-[#E8E9E1] p-5 md:p-6">
-      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">{label}</p>
+    <div className="bg-[var(--card)] border border-[var(--border)] p-5 md:p-6">
+      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-2)] mb-2">{label}</p>
       <p className={`text-[22px] md:text-[28px] font-bold leading-tight ${c}`}>{value}</p>
-      {sub && <p className="mt-1 text-[10px] text-[var(--text-dim)]">{sub}</p>}
+      {sub && <p className="mt-1 text-[10px] text-[var(--text-3)]">{sub}</p>}
     </div>
   );
 }

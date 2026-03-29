@@ -111,6 +111,14 @@ export default function Home() {
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [data?.tokenMint, fetchToken]);
 
+  useEffect(() => {
+    const el = document.querySelector('[data-video-bg]');
+    if (el) {
+      if (data) el.classList.add('video-blur');
+      else el.classList.remove('video-blur');
+    }
+  }, [data]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = mint.trim();
@@ -213,7 +221,7 @@ export default function Home() {
         <div className="flex flex-col items-center justify-center text-center min-h-[80vh] px-4">
           <img src="/logo.svg" alt="CreatorFees" className="h-16 md:h-20 mb-6" />
           <h1 className="text-[36px] md:text-[52px] lg:text-[68px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
-            Creator Fee <span className="text-[var(--green)]">Dashboard</span>
+            Creator Fees <span className="text-[var(--green)]">Dashboard</span>
           </h1>
           <p className="mt-4 text-[14px] md:text-[16px] text-[var(--text-2)] max-w-lg leading-relaxed">
             Track lifetime creator fees, claim history, and fee share analytics for any Bags.fm token.
@@ -486,7 +494,7 @@ function KPI({ label, value, unit, sub, accent }: { label: string; value: string
 function AppsPanel({ onClose }: { onClose: () => void }) {
   return (
     <>
-      <div className="fixed inset-0 z-[70] bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 pointer-events-none">
         <div className="bg-[var(--card)] border border-[var(--border)] shadow-2xl w-full max-w-lg pointer-events-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">

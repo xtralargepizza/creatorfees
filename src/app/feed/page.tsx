@@ -14,10 +14,10 @@ interface TokenLaunch {
 }
 
 const STATUS: Record<string, { label: string; cls: string }> = {
-  PRE_LAUNCH: { label: "PRE-LAUNCH", cls: "bg-purple-500/15 text-purple-700 border border-purple-500/20" },
-  PRE_GRAD: { label: "BONDING CURVE", cls: "bg-yellow-500/15 text-yellow-700 border border-yellow-500/20" },
-  MIGRATING: { label: "MIGRATING", cls: "bg-blue-500/15 text-blue-700 border border-blue-500/20" },
-  MIGRATED: { label: "GRADUATED", cls: "bg-[#00D62B]/15 text-[#00A020] border border-[#00D62B]/20" },
+  PRE_LAUNCH: { label: "PRE-LAUNCH", cls: "bg-purple-500/15 text-purple-400 border border-purple-500/20" },
+  PRE_GRAD: { label: "BONDING CURVE", cls: "bg-yellow-500/15 text-yellow-400 border border-yellow-500/20" },
+  MIGRATING: { label: "MIGRATING", cls: "bg-blue-500/15 text-blue-400 border border-blue-500/20" },
+  MIGRATED: { label: "GRADUATED", cls: "bg-[var(--green)]/15 text-[var(--green)] border border-[var(--green)]/20" },
 };
 
 export default function FeedPage() {
@@ -106,9 +106,9 @@ export default function FeedPage() {
           ))}
         </div>
       ) : error ? (
-        <div className="border-2 border-red-200 bg-red-50 p-8 text-center">
-          <p className="text-[12px] font-bold text-red-700">{error}</p>
-          <button onClick={() => { setLoading(true); fetchFeed(); }} className="mt-4 py-2 px-6 border-2 border-red-300 text-[10px] font-bold uppercase tracking-[0.1em] text-red-600 hover:bg-red-50">
+        <div className="border-2 border-[var(--error)]/30 bg-[var(--error)]/10 p-8 text-center">
+          <p className="text-[12px] font-bold text-[var(--error)]">{error}</p>
+          <button onClick={() => { setLoading(true); fetchFeed(); }} className="mt-4 py-2 px-6 border-2 border-[var(--error)]/30 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--error)] hover:bg-[var(--error)]/10">
             RETRY
           </button>
         </div>
@@ -128,12 +128,12 @@ export default function FeedPage() {
 }
 
 function TokenCard({ token, index }: { token: TokenLaunch; index: number }) {
-  const status = STATUS[token.status] || { label: token.status, cls: "bg-gray-500/10 text-gray-600 border border-gray-500/20" };
+  const status = STATUS[token.status] || { label: token.status, cls: "bg-[var(--text-3)]/15 text-[var(--text-2)] border border-[var(--text-3)]/20" };
 
   return (
     <a
       href={`/token/${token.tokenMint}`}
-      className="animate-slide-up group bg-[#FFFFFF] border border-[#E8E9E1] p-5 transition-colors hover:bg-[var(--surface-low)] flex flex-col"
+      className="animate-slide-up group bg-[var(--card)] border border-[var(--border)] p-5 transition-colors hover:bg-[var(--surface-low)] flex flex-col"
       style={{ animationDelay: `${index * 40}ms` }}
     >
       <div className="flex items-start gap-3">
