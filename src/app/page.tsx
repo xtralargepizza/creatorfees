@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 interface Creator {
   username: string; pfp: string; provider: string; twitterUsername: string;
@@ -39,13 +40,30 @@ function copyToClipboard(text: string) { navigator.clipboard.writeText(text).cat
 
 const COLORS = ["#00D62B", "#33E155", "#66EC80", "#99F4AA", "#CCF9D4", "#E0FBE8"];
 
+const QUICK_LINKS = [
+  { href: "https://bags.fm/launch", label: "Launch Token", icon: "🚀", desc: "Launch a new Bags token" },
+  { href: "https://bags.fm/apps/dexscreener", label: "DexScreener", icon: "📊", desc: "Pay for DexScreener listing" },
+  { href: "https://bags.fm/apps/compound-liquidity", label: "Compound Liquidity", icon: "💧", desc: "Compound your LP" },
+  { href: "https://bags.fm/apps/dex-boost", label: "Dex Boost", icon: "⚡", desc: "Boost DEX visibility" },
+  { href: "https://bags.fm/apps/dividendsbot", label: "DividendsBot", icon: "🤖", desc: "Auto dividend payouts" },
+  { href: "https://bags.fm/apps/bagsamm", label: "BagsAMM", icon: "🔄", desc: "Bags automated market maker" },
+  { href: "https://bags.fm/apps/x", label: "Connect X", icon: "𝕏", desc: "Link X for fee sharing" },
+  { href: "https://bags.fm/apps/tiktok", label: "Connect TikTok", icon: "🎵", desc: "TikTok fee sharing" },
+  { href: "https://bags.fm/apps/moltbook", label: "Connect Moltbook", icon: "📖", desc: "Moltbook fee sharing" },
+  { href: "https://bags.fm/apps/github", label: "Connect GitHub", icon: "🐙", desc: "GitHub fee sharing" },
+  { href: "https://bags.fm/apps/kick", label: "Connect Kick", icon: "🎮", desc: "Kick streamer royalties" },
+];
+
 export default function Home() {
+  const router = useRouter();
   const [mint, setMint] = useState("");
   const [data, setData] = useState<TokenData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [copied, setCopied] = useState(false);
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIdx, setHistoryIdx] = useState(-1);
   const prevEventsRef = useRef<string[]>([]);
   const toastId = useRef(0);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
@@ -95,7 +113,22 @@ export default function Home() {
     const trimmed = mint.trim();
     if (!trimmed || trimmed.length < 32 || trimmed.length > 44) { setError("Enter a valid Bags token address"); return; }
     prevEventsRef.current = [];
+    setHistory(prev => [...prev.slice(0, historyIdx + 1), trimmed]);
+    setHistoryIdx(prev => prev + 1);
     fetchToken(trimmed);
+  };
+
+  const goBack = () => {
+    if (historyIdx > 0) {
+      const prev = history[historyIdx - 1];
+      setHistoryIdx(historyIdx - 1);
+      setMint(prev);
+      prevEventsRef.current = [];
+      fetchToken(prev);
+    } else {
+      setData(null);
+      setMint("");
+    }
   };
 
   const handleCopy = () => {
@@ -137,24 +170,33 @@ export default function Home() {
         ))}
       </div>
 
-      {/* ═══ STICKY SEARCH BAR (when results showing) ═══ */}
+      {/* ═══ STICKY NAV + SEARCH (when results showing) ═══ */}
       {hasResults && (
-        <div className="sticky top-0 z-50 bg-[var(--bg)] border-b border-[var(--border)] py-3">
-          <form onSubmit={handleSearch} className="mx-auto max-w-4xl px-4">
-            <div className="flex h-12">
+        <div className="sticky top-0 z-50 bg-[var(--bg)] border-b border-[var(--border)] py-2.5">
+          <div className="mx-auto max-w-4xl px-4 flex items-center gap-3">
+            {/* Back button */}
+            <button onClick={goBack} className="shrink-0 w-10 h-10 flex items-center justify-center border border-[var(--border)] bg-[var(--card)] hover:border-[var(--green)] hover:text-[var(--green)] text-[var(--text-2)]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            </button>
+            {/* Search */}
+            <form onSubmit={handleSearch} className="flex-1 flex h-10">
               <input
                 type="text"
                 value={mint}
                 onChange={(e) => { setMint(e.target.value); setError(""); }}
                 placeholder="Paste Bags CA here..."
-                className="flex-1 bg-[var(--card)] border-2 border-r-0 border-[var(--border)] px-4 text-[14px] text-[var(--text)] placeholder:text-[var(--text-3)] outline-none font-mono focus:border-[var(--green)]"
+                className="flex-1 bg-[var(--card)] border-2 border-r-0 border-[var(--border)] px-4 text-[13px] text-[var(--text)] placeholder:text-[var(--text-3)] outline-none font-mono focus:border-[var(--green)]"
               />
-              <button type="submit" disabled={loading} className="bg-[var(--green)] text-white font-bold px-6 text-[13px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)] disabled:opacity-50 shrink-0 border-2 border-[var(--green)]">
-                {loading ? "..." : "Check Fees"}
+              <button type="submit" disabled={loading} className="bg-[var(--green)] text-white font-bold px-5 text-[12px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)] disabled:opacity-50 shrink-0">
+                {loading ? "..." : "Go"}
               </button>
-            </div>
-            {error && <p className="mt-1 text-[11px] font-bold text-[var(--error)]">{error}</p>}
-          </form>
+            </form>
+            {/* Logo home link */}
+            <a href="/" className="shrink-0 hidden sm:block">
+              <img src="/logo.svg" alt="" className="h-5" />
+            </a>
+          </div>
+          {error && <p className="mx-auto max-w-4xl px-4 mt-1 text-[11px] font-bold text-[var(--error)]">{error}</p>}
         </div>
       )}
 
@@ -189,6 +231,21 @@ export default function Home() {
             </div>
             {error && <p className="mt-2 text-center text-[13px] font-bold text-[var(--error)]">{error}</p>}
           </form>
+
+          {/* Quick Links on homepage */}
+          <div className="w-full max-w-3xl mt-12">
+            <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--text-3)] mb-3 text-center">Quick Bags Tools</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {QUICK_LINKS.map(l => (
+                <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
+                  className="bg-[var(--card)] border border-[var(--border)] px-3 py-2 text-[12px] font-semibold text-[var(--text)] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors flex items-center gap-1.5"
+                  title={l.desc}>
+                  <span className="text-[14px]">{l.icon}</span>
+                  {l.label}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -210,23 +267,25 @@ export default function Home() {
         <div ref={resultsRef} className="mx-auto max-w-4xl px-4 py-6 animate-slide-up">
 
           {/* Token header */}
-          <div className="flex items-center gap-4 mb-6">
-            {creator?.pfp && <img src={creator.pfp} alt="" className="w-12 h-12 md:w-14 md:h-14 shrink-0" />}
-            <div className="min-w-0">
-              <h2 className="text-[20px] md:text-[24px] font-bold text-[var(--text)] truncate">
-                {creator?.twitterUsername ? `@${creator.twitterUsername}` : data.tokenMint.slice(0, 12) + "..."}
-              </h2>
-              <button onClick={handleCopy} className="flex items-center gap-1.5 text-[12px] font-mono text-[var(--text-3)] hover:text-[var(--green)] mt-0.5">
-                {data.tokenMint.slice(0, 6)}...{data.tokenMint.slice(-4)}
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13"/><path d="M5 15H4V4h11v1"/></svg>
-                {copied && <span className="text-[var(--green)] font-bold">Copied!</span>}
-              </button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6">
+            <div className="flex items-center gap-3 min-w-0">
+              {creator?.pfp && <img src={creator.pfp} alt="" className="w-11 h-11 md:w-14 md:h-14 shrink-0" />}
+              <div className="min-w-0">
+                <h2 className="text-[18px] md:text-[24px] font-bold text-[var(--text)] truncate">
+                  {creator?.twitterUsername ? `@${creator.twitterUsername}` : data.tokenMint.slice(0, 12) + "..."}
+                </h2>
+                <button onClick={handleCopy} className="flex items-center gap-1.5 text-[11px] md:text-[12px] font-mono text-[var(--text-3)] hover:text-[var(--green)] mt-0.5">
+                  {data.tokenMint.slice(0, 6)}...{data.tokenMint.slice(-4)}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13"/><path d="M5 15H4V4h11v1"/></svg>
+                  {copied && <span className="text-[var(--green)] font-bold">Copied!</span>}
+                </button>
+              </div>
             </div>
             <a
               href={`https://bags.fm/${data.tokenMint}?ref=crisnewtonx`}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto bg-[var(--green)] text-white font-bold py-2.5 px-5 text-[11px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)] shrink-0 hidden sm:block"
+              className="sm:ml-auto bg-[var(--green)] text-white text-center font-bold py-2.5 px-5 text-[11px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)] shrink-0"
             >
               View on Bags
             </a>
@@ -387,23 +446,28 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Mobile: View on Bags */}
-          <a
-            href={`https://bags.fm/${data.tokenMint}?ref=crisnewtonx`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block sm:hidden w-full bg-[var(--green)] text-white text-center font-bold py-3.5 text-[13px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)] mb-4"
-          >
-            View on Bags.fm
-          </a>
-
           {/* Empty state */}
           {feesLam === 0 && data.creators.length === 0 && events.length === 0 && (
-            <div className="bg-[var(--card)] border border-[var(--border)] p-10 text-center">
+            <div className="bg-[var(--card)] border border-[var(--border)] p-8 md:p-10 text-center">
               <p className="text-[14px] font-bold text-[var(--text-2)]">No fee data found</p>
               <p className="text-[12px] text-[var(--text-3)] mt-2">This token may be new or not on Bags.</p>
             </div>
           )}
+
+          {/* Quick Links below results */}
+          <div className="mt-8 border-t border-[var(--border)] pt-6">
+            <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--text-3)] mb-3">Quick Bags Tools</p>
+            <div className="flex flex-wrap gap-2">
+              {QUICK_LINKS.slice(0, 6).map(l => (
+                <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
+                  className="bg-[var(--card)] border border-[var(--border)] px-3 py-2 text-[11px] font-semibold text-[var(--text)] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors flex items-center gap-1.5"
+                  title={l.desc}>
+                  <span className="text-[13px]">{l.icon}</span>
+                  {l.label}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </>

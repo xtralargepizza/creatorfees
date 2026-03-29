@@ -4,6 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CreatorFees.xyz — Bags Fee Dashboard",
   description: "Track creator fees, claim history, and analytics for any Bags.fm token.",
+  icons: { icon: "/favicon.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
