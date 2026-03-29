@@ -10,21 +10,38 @@ export async function GET(
   try {
     const { address } = await params;
     const client = getBagsClient();
-    const { tokenMints } = await client.getAdminList(address);
 
-    const mintsToQuery = tokenMints.slice(0, 20);
+    // Fetch both admin list AND claimable positions in parallel
+    const [adminResult, claimResult] = await Promise.allSettled([
+      client.getAdminList(address),
+      client.getClaimablePositions(address),
+    ]);
+
+    // Collect unique mints from both sources
+    const mintSet = new Set<string>();
+
+    if (adminResult.status === "fulfilled") {
+      adminResult.value.tokenMints.forEach((m: string) => mintSet.add(m));
+    }
+
+    if (claimResult.status === "fulfilled") {
+      const positions = Array.isArray(claimResult.value) ? claimResult.value : [];
+      positions.forEach((p: { baseMint?: string }) => {
+        if (p.baseMint) mintSet.add(p.baseMint);
+      });
+    }
+
+    const allMints = Array.from(mintSet).slice(0, 30);
+
+    // Fetch lifetime fees for each mint
     const results = await Promise.allSettled(
-      mintsToQuery.map((mint) => client.getLifetimeFees(mint))
+      allMints.map((mint) => client.getLifetimeFees(mint))
     );
 
-    const tokenData = mintsToQuery.map((mint, i) => {
-      const result = results[i];
-      return {
-        mint,
-        lifetimeFees:
-          result.status === "fulfilled" ? result.value : null,
-      };
-    });
+    const tokenData = allMints.map((mint, i) => ({
+      mint,
+      lifetimeFees: results[i].status === "fulfilled" ? results[i].value : null,
+    }));
 
     return NextResponse.json({
       success: true,
