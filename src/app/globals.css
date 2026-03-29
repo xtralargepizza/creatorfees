@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* ─── OpenRunde Font ──────────────────────────────── */
 @font-face { font-family: 'OpenRunde'; src: url('/fonts/OpenRunde-Regular.woff2') format('woff2'), url('/fonts/OpenRunde-Regular.woff') format('woff'); font-weight: 400; font-display: swap; }
 @font-face { font-family: 'OpenRunde'; src: url('/fonts/OpenRunde-Medium.woff2') format('woff2'), url('/fonts/OpenRunde-Medium.woff') format('woff'); font-weight: 500; font-display: swap; }
 @font-face { font-family: 'OpenRunde'; src: url('/fonts/OpenRunde-Semibold.woff2') format('woff2'), url('/fonts/OpenRunde-Semibold.woff') format('woff'); font-weight: 600; font-display: swap; }
@@ -12,12 +11,11 @@
   --green-10: rgba(0, 214, 43, 0.08);
   --bg: #F5F5EE;
   --card: #FFFFFF;
-  --card-hover: #FAFAF6;
   --border: #E5E5DD;
   --border-light: #EDEDE6;
   --text: #0D0D0F;
-  --text-secondary: #6B6B6F;
-  --text-dim: #9B9B9F;
+  --text-2: #6B6B6F;
+  --text-3: #9B9B9F;
   --error: #D32F2F;
 }
 
@@ -35,47 +33,11 @@ a, button, input { transition: all 0.15s ease; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--green); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--green); }
 
-/* Pill-shaped elements */
-.pill {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px !important;
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text);
-  cursor: pointer;
-}
-.pill:hover { background: var(--card-hover); border-color: #D0D0C8; }
+.progress-bar { height: 8px; background: var(--border); overflow: hidden; }
+.progress-fill { height: 100%; background: var(--green); }
 
-/* Rounded cards */
-.rcard {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px !important;
-  overflow: hidden;
-}
-
-/* Stat pills */
-.stat-pill {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px !important;
-  padding: 16px;
-  text-align: center;
-}
-
-/* Progress */
-.progress-bar { height: 8px; background: var(--border); border-radius: 4px !important; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--green); border-radius: 4px !important; }
-
-/* Toast */
 @keyframes toast-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes toast-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 .toast-enter { animation: toast-in 0.3s ease-out forwards; }
