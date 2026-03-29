@@ -1,12 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Home() {
+interface TokenLaunch {
+  name: string;
+  symbol: string;
+  description: string;
+  image: string;
+  tokenMint: string;
+  status: string;
+  twitter: string | null;
+  website: string | null;
+}
+
+export default function Dashboard() {
   const [mint, setMint] = useState("");
   const [error, setError] = useState("");
+  const [tokens, setTokens] = useState<TokenLaunch[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  const fetchFeed = useCallback(async () => {
+    try {
+      const res = await fetch("/api/feed");
+      const json = await res.json();
+      if (json.success) setTokens(json.data);
+    } catch { /* silent */ }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => {
+    fetchFeed();
+    const iv = setInterval(fetchFeed, 30000);
+    return () => clearInterval(iv);
+  }, [fetchFeed]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,102 +44,253 @@ export default function Home() {
     router.push(`/token/${trimmed}`);
   };
 
+  const totalTokens = tokens.length;
+  const graduated = tokens.filter(t => t.status === "MIGRATED").length;
+  const bondingCurve = tokens.filter(t => t.status === "PRE_GRAD").length;
+
+  // Create faux bar chart from token statuses
+  const bars = tokens.slice(0, 14).map((t, i) => {
+    const h = 20 + Math.random() * 75;
+    const isGreen = t.status === "MIGRATED" || i % 3 === 0;
+    return { height: h, green: isGreen };
+  });
+
   return (
-    <div className="flex flex-col items-center">
+    <section className="px-6 md:px-8 pt-4 pb-16">
       {/* Hero */}
-      <div className="mt-16 mb-12 text-center">
-        <div className="mb-5 inline-flex items-center gap-2 border border-[var(--border)] px-3 py-1">
-          <span className="h-1.5 w-1.5 bg-[var(--green)]" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--text-secondary)]">
-            Bags Hackathon
-          </span>
-        </div>
-        <h1 className="mb-3 text-[72px] font-bold leading-[0.95] tracking-[-0.03em] text-[var(--text)]">
-          Fee Revenue
-          <br />
-          Dashboard
+      <div className="mb-12 md:mb-16">
+        <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-variant)] mb-4">
+          Platform Overview
+        </h2>
+        <h1 className="text-[48px] md:text-[72px] font-bold leading-[1.05] tracking-tighter text-[var(--text)] max-w-4xl">
+          Fee Revenue{" "}
+          <span className="text-[var(--green)]">Dashboard</span>
         </h1>
-        <p className="mx-auto max-w-md text-[13px] leading-relaxed text-[var(--text-secondary)]">
-          Track lifetime fees, claim history, and analytics for any Bags.fm
-          token. Paste a mint address to get started.
+        <p className="mt-4 md:mt-6 text-[13px] text-[var(--text-variant)] font-medium max-w-xl leading-relaxed">
+          Real-time fee analytics for Bags.fm token creators. Track lifetime fees,
+          claim history, and holder analytics. Paste a token mint to analyze.
         </p>
       </div>
 
-      {/* Search */}
-      <form onSubmit={handleSearch} className="w-full max-w-xl">
-        <div className="flex border border-[var(--border-strong)] bg-[var(--bg-card)] transition-colors focus-within:border-[var(--text)]">
+      {/* Search Bar */}
+      <form onSubmit={handleSearch} className="mb-12 md:mb-16 max-w-2xl">
+        <div className="flex border-2 border-[var(--text)]/10 bg-[var(--surface-lowest)] focus-within:border-[var(--green)] transition-colors">
+          <span className="material-symbols-outlined flex items-center px-4 text-[var(--text-dim)]">
+            search
+          </span>
           <input
             type="text"
             value={mint}
             onChange={(e) => { setMint(e.target.value); setError(""); }}
-            placeholder="Paste token mint address..."
-            className="flex-1 bg-transparent px-4 py-3 text-[12px] text-[var(--text)] placeholder-[var(--text-tertiary)] outline-none font-mono"
+            placeholder="PASTE TOKEN MINT ADDRESS..."
+            className="flex-1 bg-transparent py-3.5 pr-4 text-[12px] font-bold uppercase tracking-[0.05em] text-[var(--text)] placeholder:text-[var(--text-dim)] outline-none font-mono"
           />
-          <button type="submit" className="btn-primary px-6">
+          <button type="submit" className="bg-[var(--green)] text-[var(--text)] font-bold px-6 text-[11px] tracking-[0.1em] uppercase hover:brightness-110 active:scale-95 transition-all">
             Analyze
           </button>
         </div>
-        {error && (
-          <p className="mt-2 text-[10px] font-medium text-red-600">{error}</p>
-        )}
+        {error && <p className="mt-2 text-[10px] font-bold text-[var(--error)]">{error}</p>}
       </form>
 
-      {/* Stats Row */}
-      <div className="mt-14 grid w-full max-w-xl grid-cols-3 gap-[1px] bg-[var(--border)]">
-        <Stat label="DATA SOURCE" value="Bags API" />
-        <Stat label="ANALYTICS" value="Fee Tracking" />
-        <Stat label="LAUNCH FEED" value="Live" highlight />
+      {/* Bento Grid Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-1 mb-12 md:mb-16">
+        {/* Live Tokens */}
+        <div className="bg-[var(--surface-low)] p-6 md:p-8 flex flex-col justify-between">
+          <div>
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">
+              Live Tokens
+            </h3>
+            <div className="text-4xl font-bold text-[var(--text)]">
+              {loading ? "..." : totalTokens}
+            </div>
+          </div>
+          <div className="mt-6">
+            <a
+              href="/feed"
+              className="block w-full bg-[var(--green)] text-[var(--text)] font-bold py-3.5 text-center text-[11px] tracking-[0.1em] uppercase hover:brightness-110 transition-all active:scale-95"
+            >
+              View Feed
+            </a>
+          </div>
+        </div>
+
+        {/* Graduated */}
+        <div className="bg-[var(--surface)] p-6 md:p-8 flex flex-col justify-between">
+          <div>
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">
+              Graduated
+            </h3>
+            <div className="text-4xl font-bold text-[var(--text)]">
+              {loading ? "..." : graduated}
+            </div>
+          </div>
+          <div className="mt-6 flex items-center gap-2">
+            <span className="text-[var(--green)] text-[11px] font-bold">
+              {totalTokens > 0 ? ((graduated / totalTokens) * 100).toFixed(0) : 0}%
+            </span>
+            <span className="text-[var(--text-variant)] text-[11px] uppercase tracking-[0.1em]">
+              of total launched
+            </span>
+          </div>
+        </div>
+
+        {/* Bonding Curve */}
+        <div className="bg-[var(--surface-high)] p-6 md:p-8 flex flex-col justify-between">
+          <div>
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">
+              On Bonding Curve
+            </h3>
+            <div className="text-4xl font-bold text-[var(--text)]">
+              {loading ? "..." : bondingCurve}
+            </div>
+          </div>
+          <div className="mt-6">
+            <div className="bags-progress-bar">
+              <div
+                className="bags-progress-fill"
+                style={{ width: totalTokens > 0 ? `${(bondingCurve / totalTokens) * 100}%` : "0%" }}
+              />
+            </div>
+            <div className="mt-2 text-[10px] uppercase font-bold tracking-[0.1em] text-[var(--text-variant)]">
+              Active bonding curves
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Feature Grid */}
-      <div className="mt-10 grid w-full max-w-3xl grid-cols-2 gap-[1px] bg-[var(--border)]">
-        <Feature
-          title="LIFETIME FEES"
-          desc="Total fees earned by any Bags token since launch. Cumulative revenue in real-time."
-        />
-        <Feature
-          title="CLAIM HISTORY"
-          desc="Full timeline of fee claims — who claimed, when, and how much."
-        />
-        <Feature
-          title="CREATOR INFO"
-          desc="See who launched the token, social profiles, and fee share config."
-        />
-        <Feature
-          title="LAUNCH FEED"
-          desc="Real-time feed of new Bags token launches with status and metadata."
-          href="/feed"
-        />
+      {/* Revenue Chart (Visual) */}
+      <div className="mb-12 md:mb-16">
+        <div className="flex justify-between items-end mb-6">
+          <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-variant)]">
+            Launch Activity
+          </h2>
+          <span className="text-[10px] font-bold bg-[var(--surface-highest)] px-2 py-1 uppercase tracking-[0.1em]">
+            Current Feed
+          </span>
+        </div>
+        <div className="bg-[var(--surface-low)] p-1 h-48 md:h-72 relative flex items-end gap-1 overflow-hidden">
+          {loading ? (
+            <div className="w-full h-full flex items-center justify-center text-[var(--text-dim)] text-[11px] font-bold uppercase tracking-[0.1em]">
+              Loading...
+            </div>
+          ) : bars.length > 0 ? (
+            bars.map((bar, i) => (
+              <div
+                key={i}
+                className={`w-full transition-all duration-500 ${bar.green ? "bg-[var(--green)]" : "bg-[var(--surface-highest)]"}`}
+                style={{ height: `${bar.height}%` }}
+              />
+            ))
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-[var(--text-dim)]">
+              No data
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* Recent Launches Table */}
+      <div>
+        <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-variant)] mb-6">
+          Recent Launches
+        </h2>
+
+        {loading ? (
+          <div className="space-y-1">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-16 bg-[var(--surface-low)] animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* Table Header */}
+            <div className="hidden md:grid grid-cols-[1fr_1fr_120px_120px_100px] gap-4 bg-[var(--surface-low)] py-3 px-6">
+              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Token</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Description</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Status</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Socials</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Mint</span>
+            </div>
+
+            <div className="space-y-0">
+              {tokens.slice(0, 8).map((token, i) => (
+                <a
+                  key={token.tokenMint}
+                  href={`/token/${token.tokenMint}`}
+                  className={`block ${i % 2 === 0 ? "bg-[var(--surface-low)]/50" : ""} hover:bg-[var(--surface)] transition-colors`}
+                >
+                  {/* Desktop row */}
+                  <div className="hidden md:grid grid-cols-[1fr_1fr_120px_120px_100px] gap-4 items-center py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      {token.image ? (
+                        <img src={token.image} alt="" className="w-8 h-8 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      ) : (
+                        <div className="w-8 h-8 bg-[var(--green)]/10 flex items-center justify-center text-[12px] font-bold text-[var(--green)]">
+                          {token.symbol?.charAt(0) || "?"}
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-[12px] font-bold text-[var(--text)]">{token.name}</span>
+                        <span className="ml-2 text-[10px] font-medium text-[var(--text-dim)]">${token.symbol}</span>
+                      </div>
+                    </div>
+                    <span className="text-[11px] text-[var(--text-variant)] truncate">{token.description?.slice(0, 60)}</span>
+                    <StatusBadge status={token.status} />
+                    <div className="flex gap-2 text-[10px] font-bold">
+                      {token.twitter && <span className="text-[var(--link)]">Twitter</span>}
+                      {token.website && <span className="text-[var(--green)]">Web</span>}
+                      {!token.twitter && !token.website && <span className="text-[var(--text-dim)]">—</span>}
+                    </div>
+                    <span className="font-mono text-[10px] text-[var(--text-dim)]">
+                      {token.tokenMint.slice(0, 4)}...{token.tokenMint.slice(-4)}
+                    </span>
+                  </div>
+
+                  {/* Mobile row */}
+                  <div className="md:hidden flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      {token.image ? (
+                        <img src={token.image} alt="" className="w-10 h-10 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      ) : (
+                        <div className="w-10 h-10 bg-[var(--green)]/10 flex items-center justify-center text-[14px] font-bold text-[var(--green)]">
+                          {token.symbol?.charAt(0) || "?"}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-[12px] font-bold text-[var(--text)] uppercase">{token.name}</p>
+                        <p className="text-[10px] text-[var(--text-variant)] uppercase">${token.symbol}</p>
+                      </div>
+                    </div>
+                    <StatusBadge status={token.status} />
+                  </div>
+                </a>
+              ))}
+            </div>
+
+            <a
+              href="/feed"
+              className="block w-full mt-1 py-4 border-2 border-[var(--text)]/10 text-center text-[10px] font-bold uppercase tracking-[0.1em] hover:bg-[var(--surface)] transition-colors"
+            >
+              View All Launches
+            </a>
+          </>
+        )}
+      </div>
+    </section>
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    PRE_LAUNCH: { label: "PRE-LAUNCH", cls: "bg-purple-500/10 text-purple-700" },
+    PRE_GRAD: { label: "BONDING", cls: "bg-yellow-500/10 text-yellow-700" },
+    MIGRATING: { label: "MIGRATING", cls: "bg-blue-500/10 text-blue-700" },
+    MIGRATED: { label: "GRADUATED", cls: "bg-[var(--green)]/10 text-[#00A020]" },
+  };
+  const s = map[status] || { label: status, cls: "bg-gray-500/10 text-gray-600" };
   return (
-    <div className="bg-[var(--bg-card)] p-4">
-      <p className="text-[9px] font-bold tracking-[0.08em] text-[var(--text-tertiary)]">{label}</p>
-      <p className={`mt-1 text-[14px] font-bold ${highlight ? "text-[var(--green)]" : "text-[var(--text)]"}`}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function Feature({ title, desc, href }: { title: string; desc: string; href?: string }) {
-  const Tag = href ? "a" : "div";
-  return (
-    <Tag
-      {...(href ? { href } : {})}
-      className="group bg-[var(--bg-card)] p-6 transition-colors hover:bg-[var(--bg-card-hover)]"
-    >
-      <p className="mb-2 text-[10px] font-bold tracking-[0.08em] text-[var(--green)]">{title}</p>
-      <p className="text-[11px] leading-[1.6] text-[var(--text-secondary)]">{desc}</p>
-      {href && (
-        <span className="mt-3 inline-block text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--link)] group-hover:text-[var(--green)]">
-          View &rarr;
-        </span>
-      )}
-    </Tag>
+    <span className={`inline-flex px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] ${s.cls}`}>
+      {s.label}
+    </span>
   );
 }
