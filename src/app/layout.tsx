@@ -14,10 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <nav className="sticky top-0 z-50 w-full border-b border-[var(--surface)] bg-[var(--bg)]/90 backdrop-blur-md">
           <div className="mx-auto flex h-14 md:h-16 max-w-[1400px] items-center justify-between px-4 md:px-8 lg:px-12">
             <a href="/" className="flex items-center gap-2.5">
-              <img src="/bags-icon.png" alt="Bags" className="h-7 w-7" />
-              <span className="text-[15px] font-bold tracking-tight text-[var(--text)]">
-                BagsScan
-              </span>
+              <img src="/logo.svg" alt="BagsScan" className="h-8" />
             </a>
             <a
               href="https://bags.fm/?ref=crisnewtonx"

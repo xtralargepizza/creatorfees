@@ -236,7 +236,7 @@ export default function Home() {
       <div className="flex flex-col items-center px-4 min-h-[calc(100dvh-120px)]">
         {/* Hero */}
         <div className="mt-8 mb-6 text-center">
-          <img src="/bags-icon.png" alt="Bags" className="mx-auto h-14 w-14 mb-4" />
+          <img src="/logo.svg" alt="BagsScan" className="mx-auto h-12 mb-4" />
           <h1 className="text-[32px] md:text-[42px] lg:text-[52px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
             Fee Revenue <span className="text-[var(--green)]">Dashboard</span>
           </h1>
