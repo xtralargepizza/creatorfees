@@ -174,15 +174,6 @@ export default function Home() {
             {error && <p className="mt-3 text-[12px] font-bold text-[var(--error)]">{error}</p>}
           </form>
 
-          {/* Powered by */}
-          {!data && !loading && (
-            <div className="mt-6 flex items-center gap-2 text-[11px] text-[var(--text-dim)]">
-              Powered by{" "}
-              <a href="https://bags.fm/?ref=crisnewtonx" target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--green)] hover:underline">
-                Bags.fm API
-              </a>
-            </div>
-          )}
         </div>
 
         {/* Loading */}
