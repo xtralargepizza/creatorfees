@@ -34,7 +34,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           muted
           playsInline
           className="fixed inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-[0.06]"
-          style={{ mixBlendMode: "multiply" }}
         >
           <source src="/bg-video.webm" type="video/webm" />
         </video>
