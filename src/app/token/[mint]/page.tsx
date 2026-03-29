@@ -58,7 +58,7 @@ export default function TokenPage() {
     <section className="px-6 md:px-8 pt-4 pb-16 space-y-4">
       <div className="h-8 w-48 bg-[var(--surface)] animate-pulse" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
-        {[1,2,3,4].map(i => <div key={i} className="h-24 bg-[var(--surface-low)] animate-pulse" />)}
+        {[1,2,3,4].map(i => <div key={i} className="h-28 md:h-32 bg-[var(--surface-low)] animate-pulse" />)}
       </div>
       <div className="h-48 bg-[var(--surface-low)] animate-pulse" />
     </section>
@@ -88,8 +88,11 @@ export default function TokenPage() {
   return (
     <section className="px-6 md:px-8 pt-4 pb-16">
       {/* Back */}
-      <a href="/" className="inline-flex items-center gap-2 mb-6 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] hover:text-[var(--text)] transition-colors">
-        <span className="material-symbols-outlined text-sm">arrow_back</span>
+      <a
+        href="/"
+        className="inline-flex items-center gap-2 mb-8 py-2 px-4 border border-[#E8E9E1] bg-[#FFFFFF] text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] hover:text-[var(--text)] hover:border-[var(--text)] transition-colors"
+      >
+        <span className="material-symbols-outlined text-base">arrow_back</span>
         Back to Dashboard
       </a>
 
@@ -100,37 +103,37 @@ export default function TokenPage() {
         </h2>
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
           <div>
-            <div className="flex items-center gap-4 mb-3">
+            <div className="flex items-center gap-5 mb-3">
               {creator?.pfp && <img src={creator.pfp} alt="" className="w-12 h-12" />}
               <div>
-                <h1 className="text-[36px] md:text-[48px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
+                <h1 className="text-[40px] md:text-[56px] font-bold leading-[1] tracking-tighter text-[var(--text)]">
                   {feesSol > 0 ? fmtSol(feesLam) : "0"}{" "}
-                  <span className="text-[var(--green)]">SOL</span>
+                  <span className="text-[#00D62B]">SOL</span>
                 </h1>
                 {creator && (
-                  <p className="text-[11px] text-[var(--text-variant)]">
+                  <p className="text-[12px] text-[var(--text-variant)] mt-1">
                     Created by{" "}
-                    <a href={`https://x.com/${creator.twitterUsername}`} target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--link)] hover:text-[var(--green)] transition-colors">
+                    <a href={`https://x.com/${creator.twitterUsername}`} target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--link)] hover:text-[#00D62B] transition-colors">
                       @{creator.twitterUsername}
                     </a>
                   </p>
                 )}
               </div>
             </div>
-            <p className="font-mono text-[10px] text-[var(--text-dim)] break-all">{mint}</p>
+            <p className="font-mono text-[10px] text-[var(--text-dim)] break-all mt-2">{mint}</p>
           </div>
           <a
             href={`https://bags.fm/${mint}?ref=crisnewtonx`}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 bg-[var(--green)] text-[var(--text)] font-bold py-3 px-6 text-[11px] tracking-[0.1em] uppercase hover:brightness-110 active:scale-95 transition-all text-center"
+            className="shrink-0 bg-[#00D62B] text-white font-bold py-4 px-8 text-[13px] tracking-[0.1em] uppercase hover:brightness-110 active:scale-95 transition-all text-center shadow-[0_2px_8px_rgba(0,214,43,0.3)]"
           >
             View on Bags.fm
           </a>
         </div>
       </div>
 
-      {/* Bento Stats */}
+      {/* KPI Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-1 mb-12">
         <KPI label="Lifetime Fees" value={feesSol > 0 ? `${fmtSol(feesLam)} SOL` : "0 SOL"} green={feesSol > 0} />
         <KPI label="Total Claimed" value={totalClaimed > 0 ? `${fmtSol(totalClaimed)} SOL` : "0 SOL"} sub={`${data.claimStats.length} claimer(s)`} />
@@ -140,19 +143,19 @@ export default function TokenPage() {
 
       {/* Distribution Progress */}
       {feesLam > 0 && totalClaimed > 0 && (
-        <div className="bg-[var(--surface-low)] p-6 mb-12">
-          <div className="flex justify-between mb-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">
+        <div className="bg-[#FFFFFF] border border-[#E8E9E1] p-6 md:p-8 mb-12">
+          <div className="flex justify-between mb-4">
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">
               Claim Progress
             </p>
-            <p className="text-[10px] font-bold text-[var(--text)]">{claimPct.toFixed(1)}%</p>
+            <p className="text-[14px] font-bold text-[var(--text)]">{claimPct.toFixed(1)}%</p>
           </div>
-          <div className="bags-progress-bar">
-            <div className="bags-progress-fill" style={{ width: `${Math.min(100, claimPct)}%` }} />
+          <div className="progress-bar h-3">
+            <div className="progress-fill" style={{ width: `${Math.min(100, claimPct)}%` }} />
           </div>
-          <div className="mt-2 flex justify-between text-[10px] text-[var(--text-variant)]">
-            <span>Claimed: {fmtSol(totalClaimed)} SOL</span>
-            <span>Total: {fmtSol(feesLam)} SOL</span>
+          <div className="mt-3 flex justify-between text-[11px] text-[var(--text-variant)]">
+            <span>Claimed: <span className="font-bold text-[#00D62B]">{fmtSol(totalClaimed)} SOL</span></span>
+            <span>Total: <span className="font-bold">{fmtSol(feesLam)} SOL</span></span>
           </div>
         </div>
       )}
@@ -165,29 +168,29 @@ export default function TokenPage() {
           </h2>
           <div className="space-y-1">
             {data.creators.map((c, i) => (
-              <div key={i} className={`${i % 2 === 0 ? "bg-[var(--surface-low)]" : "bg-[var(--surface)]"} p-4 flex items-center justify-between`}>
-                <div className="flex items-center gap-4">
+              <div key={i} className="bg-[#FFFFFF] border border-[#E8E9E1] p-5 md:p-6 flex items-center justify-between">
+                <div className="flex items-center gap-4 md:gap-5">
                   {c.pfp ? (
-                    <img src={c.pfp} alt="" className="w-10 h-10" />
+                    <img src={c.pfp} alt="" className="w-12 h-12" />
                   ) : (
-                    <div className="w-10 h-10 bg-[var(--green)]/10 flex items-center justify-center text-[14px] font-bold text-[var(--green)]">
+                    <div className="w-12 h-12 bg-[#00D62B]/10 flex items-center justify-center text-[16px] font-bold text-[#00D62B]">
                       {c.username.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div>
-                    <div className="flex items-center gap-2">
-                      <a href={`https://x.com/${c.twitterUsername}`} target="_blank" rel="noopener noreferrer" className="text-[12px] font-bold text-[var(--link)] hover:text-[var(--green)] transition-colors">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <a href={`https://x.com/${c.twitterUsername}`} target="_blank" rel="noopener noreferrer" className="text-[13px] font-bold text-[var(--link)] hover:text-[#00D62B] transition-colors">
                         @{c.twitterUsername || c.username}
                       </a>
-                      {c.isCreator && <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] bg-[var(--green)]/10 text-[#00A020]">Creator</span>}
+                      {c.isCreator && <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] bg-[#00D62B]/10 text-[#00A020]">Creator</span>}
                       {c.isAdmin && <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] bg-blue-500/10 text-blue-700">Admin</span>}
                     </div>
-                    <p className="text-[10px] text-[var(--text-variant)]">
-                      {c.provider} &middot; <span className="font-bold">{(c.royaltyBps / 100).toFixed(0)}% share</span>
+                    <p className="text-[11px] text-[var(--text-variant)] mt-1">
+                      {c.provider} &middot; <span className="font-bold text-[var(--text)]">{(c.royaltyBps / 100).toFixed(0)}% share</span>
                     </p>
                   </div>
                 </div>
-                <span className="font-mono text-[10px] text-[var(--text-dim)]">{c.wallet.slice(0, 6)}...{c.wallet.slice(-4)}</span>
+                <span className="font-mono text-[10px] text-[var(--text-dim)] hidden sm:inline">{c.wallet.slice(0, 6)}...{c.wallet.slice(-4)}</span>
               </div>
             ))}
           </div>
@@ -205,15 +208,15 @@ export default function TokenPage() {
               const claimed = parseInt(stat.totalClaimed || "0");
               const pct = feesLam > 0 ? (claimed / feesLam) * 100 : 0;
               return (
-                <div key={i} className="bg-[var(--surface-low)] p-4">
-                  <div className="flex justify-between mb-2">
-                    <span className="font-mono text-[11px]">{stat.wallet.slice(0, 8)}...{stat.wallet.slice(-6)}</span>
-                    <span className="text-[12px] font-bold text-[var(--green)]">{fmtSol(claimed)} SOL</span>
+                <div key={i} className="bg-[#FFFFFF] border border-[#E8E9E1] p-5 md:p-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="font-mono text-[11px] text-[var(--text-variant)]">{stat.wallet.slice(0, 8)}...{stat.wallet.slice(-6)}</span>
+                    <span className="text-[16px] md:text-[20px] font-bold text-[#00D62B]">{fmtSol(claimed)} SOL</span>
                   </div>
-                  <div className="bags-progress-bar" style={{ height: "6px" }}>
-                    <div className="bags-progress-fill" style={{ width: `${Math.min(100, pct)}%` }} />
+                  <div className="progress-bar h-3">
+                    <div className="progress-fill" style={{ width: `${Math.min(100, pct)}%` }} />
                   </div>
-                  <p className="mt-1 text-right text-[9px] font-bold text-[var(--text-dim)]">{pct.toFixed(1)}% of fees</p>
+                  <p className="mt-2 text-right text-[10px] font-bold text-[var(--text-dim)]">{pct.toFixed(1)}% of fees</p>
                 </div>
               );
             })}
@@ -234,27 +237,25 @@ export default function TokenPage() {
                 href={`https://solscan.io/tx/${ev.signature}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center justify-between p-4 transition-colors hover:bg-[var(--surface)] ${
-                  i % 2 === 0 ? "bg-[var(--surface-low)]" : "bg-[var(--surface-low)]/50"
-                }`}
+                className="flex items-center justify-between p-5 md:p-6 bg-[#FFFFFF] border border-[#E8E9E1] transition-colors hover:bg-[var(--surface)] block"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-[var(--surface-highest)] flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[var(--green)]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  <div className="w-12 h-12 bg-[#00D62B]/10 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[#00D62B] text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
                       payments
                     </span>
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-[var(--text)] uppercase">Fee Claim</p>
-                    <p className="text-[10px] text-[var(--text-variant)] uppercase">
+                    <p className="text-[12px] font-bold text-[var(--text)] uppercase">Fee Claim</p>
+                    <p className="text-[10px] text-[var(--text-variant)] uppercase mt-0.5">
                       {ago(ev.timestamp)} &middot; {ev.wallet.slice(0, 6)}...{ev.wallet.slice(-4)}
-                      {ev.isCreator && <span className="ml-1 text-[var(--green)]">&middot; Creator</span>}
+                      {ev.isCreator && <span className="ml-1 text-[#00D62B]">&middot; Creator</span>}
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-[12px] font-bold text-[var(--green)]">+{fmtSol(parseInt(ev.amount))} SOL</p>
-                  <p className="text-[10px] text-[var(--text-variant)] uppercase">Fee Claimed</p>
+                <div className="text-right shrink-0 ml-4">
+                  <p className="text-[18px] md:text-[22px] font-bold text-[#00D62B] leading-tight">+{fmtSol(parseInt(ev.amount))} SOL</p>
+                  <p className="text-[9px] text-[var(--text-variant)] uppercase mt-0.5">Fee Claimed</p>
                 </div>
               </a>
             ))}
@@ -264,7 +265,7 @@ export default function TokenPage() {
 
       {/* Empty State */}
       {data.creators.length === 0 && data.claimStats.length === 0 && events.length === 0 && feesLam === 0 && (
-        <div className="bg-[var(--surface-low)] p-12 text-center">
+        <div className="bg-[#FFFFFF] border border-[#E8E9E1] p-12 text-center">
           <p className="text-[13px] font-bold text-[var(--text-variant)]">No data available</p>
           <p className="mt-1 text-[11px] text-[var(--text-dim)]">This token may be new or not a Bags token.</p>
         </div>
@@ -274,12 +275,12 @@ export default function TokenPage() {
 }
 
 function KPI({ label, value, sub, green, warn }: { label: string; value: string; sub?: string; green?: boolean; warn?: boolean }) {
-  const c = green ? "text-[var(--green)]" : warn ? "text-yellow-600" : "text-[var(--text)]";
+  const c = green ? "text-[#00D62B]" : warn ? "text-yellow-600" : "text-[var(--text)]";
   return (
-    <div className="bg-[var(--surface-low)] p-5">
-      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-1">{label}</p>
-      <p className={`text-[20px] md:text-[24px] font-bold ${c}`}>{value}</p>
-      {sub && <p className="mt-0.5 text-[10px] text-[var(--text-dim)]">{sub}</p>}
+    <div className="bg-[#FFFFFF] border border-[#E8E9E1] p-5 md:p-6">
+      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">{label}</p>
+      <p className={`text-[22px] md:text-[28px] font-bold leading-tight ${c}`}>{value}</p>
+      {sub && <p className="mt-1 text-[10px] text-[var(--text-dim)]">{sub}</p>}
     </div>
   );
 }

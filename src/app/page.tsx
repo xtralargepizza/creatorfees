@@ -33,12 +33,17 @@ function ago(ts: number): string {
   return `${Math.floor(d / 86400)}d ago`;
 }
 
+function copyToClipboard(text: string) {
+  navigator.clipboard.writeText(text).catch(() => {});
+}
+
 export default function Home() {
   const [mint, setMint] = useState("");
   const [data, setData] = useState<TokenData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [copied, setCopied] = useState(false);
   const prevEventsRef = useRef<string[]>([]);
   const toastId = useRef(0);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
@@ -61,7 +66,7 @@ export default function Home() {
       if (!json.success) { setError(json.error || "Failed to load"); return; }
       setData(json.data);
 
-      // Check for new claim events → toast
+      // Check for new claim events -> toast
       const events = getEvents(json.data.claimEvents);
       const sigs = events.map((e: ClaimEvent) => e.signature);
       if (prevEventsRef.current.length > 0) {
@@ -97,6 +102,13 @@ export default function Home() {
     fetchToken(trimmed);
   };
 
+  const handleCopyMint = () => {
+    if (!data?.tokenMint) return;
+    copyToClipboard(data.tokenMint);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const feesLam = data?.lifetimeFees ? parseInt(data.lifetimeFees) : 0;
   const events = data ? getEvents(data.claimEvents) : [];
   const totalClaimed = data?.claimStats.reduce((s, c) => s + parseInt(c.totalClaimed || "0"), 0) || 0;
@@ -107,74 +119,75 @@ export default function Home() {
   return (
     <>
       {/* Toast Container */}
-      <div className="fixed top-16 right-4 z-50 space-y-2 w-72">
+      <div className="fixed top-20 right-5 z-50 space-y-2 w-80">
         {toasts.map(t => (
-          <div key={t.id} className={`${t.exiting ? "toast-exit" : "toast-enter"} flex items-center gap-3 bg-[var(--white)] border-l-4 border-[var(--green)] p-3 shadow-lg`}>
-            <div className="w-8 h-8 bg-[var(--green-10)] flex items-center justify-center shrink-0">
-              <span className="text-[var(--green)] text-[14px]">$</span>
+          <div key={t.id} className={`${t.exiting ? "toast-exit" : "toast-enter"} flex items-center gap-3 bg-[var(--white)] border-l-4 border-[var(--green)] p-4 shadow-lg`}>
+            <div className="w-9 h-9 bg-[var(--green-10)] flex items-center justify-center shrink-0">
+              <span className="text-[var(--green)] text-[16px] font-bold">$</span>
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-bold text-[var(--text)] truncate">{t.message}</p>
-              <p className="text-[12px] font-bold text-[var(--green)]">{t.amount}</p>
+              <p className="text-[12px] font-bold text-[var(--text)] truncate">{t.message}</p>
+              <p className="text-[14px] font-bold text-[var(--green)]">{t.amount}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center px-4">
         {/* Hero */}
-        <div className="mt-10 mb-8 text-center">
-          <img src="/bags-icon.png" alt="Bags" className="mx-auto h-14 w-14 mb-5" />
-          <h1 className="text-[40px] md:text-[56px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
+        <div className="mt-12 mb-10 text-center">
+          <img src="/bags-icon.png" alt="Bags" className="mx-auto h-16 w-16 mb-6" />
+          <h1 className="text-[36px] md:text-[48px] lg:text-[64px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
             Fee Revenue <span className="text-[var(--green)]">Dashboard</span>
           </h1>
-          <p className="mt-3 text-[13px] text-[var(--text-variant)] max-w-md mx-auto leading-relaxed">
+          <p className="mt-4 text-[14px] text-[var(--text-variant)] max-w-lg mx-auto leading-relaxed">
             Paste a token mint address to see lifetime fees, claim history, and creator analytics instantly.
           </p>
         </div>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="w-full max-w-2xl mb-10">
+        <form onSubmit={handleSearch} className="w-full max-w-3xl mb-12">
           <div className="flex border-2 border-[var(--surface-highest)] bg-[var(--white)] focus-within:border-[var(--green)] transition-colors">
             <input
               type="text"
               value={mint}
               onChange={(e) => { setMint(e.target.value); setError(""); }}
-              placeholder="Paste token mint address..."
-              className="flex-1 bg-transparent px-4 py-3.5 text-[13px] text-[var(--text)] placeholder:text-[var(--text-dim)] outline-none font-mono"
+              placeholder="Enter Solana token mint address (e.g. So11111...)"
+              className="flex-1 bg-transparent px-5 py-4 text-[14px] text-[var(--text)] placeholder:text-[var(--text-dim)] outline-none font-mono"
             />
             <button
               type="submit"
               disabled={loading}
-              className="bg-[var(--green)] text-white font-bold px-6 text-[11px] uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] active:scale-95 transition-all disabled:opacity-50"
+              className="bg-[var(--green)] text-white font-bold px-8 text-[12px] uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] active:scale-95 transition-all disabled:opacity-50"
             >
               {loading ? "..." : "Check Fees"}
             </button>
           </div>
-          {error && <p className="mt-2 text-[11px] font-bold text-[var(--error)]">{error}</p>}
+          {error && <p className="mt-2 text-[12px] font-bold text-[var(--error)]">{error}</p>}
         </form>
 
-        {/* Results */}
+        {/* Loading skeleton */}
         {loading && (
-          <div className="w-full max-w-2xl space-y-3">
-            <div className="h-24 bg-[var(--surface-low)] animate-pulse" />
-            <div className="grid grid-cols-3 gap-1">
-              {[1,2,3].map(i => <div key={i} className="h-20 bg-[var(--surface-low)] animate-pulse" />)}
+          <div className="w-full max-w-4xl space-y-4">
+            <div className="h-28 bg-[var(--surface-low)] animate-pulse" />
+            <div className="grid grid-cols-3 gap-3">
+              {[1,2,3].map(i => <div key={i} className="h-24 bg-[var(--surface-low)] animate-pulse" />)}
             </div>
           </div>
         )}
 
+        {/* Results */}
         {data && !loading && (
-          <div className="w-full max-w-2xl animate-slide-up">
+          <div className="w-full max-w-4xl animate-slide-up">
             {/* Big Fee Display */}
-            <div className="bg-[var(--white)] border border-[var(--surface)] p-6 mb-1 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {creator?.pfp && <img src={creator.pfp} alt="" className="w-10 h-10" />}
+            <div className="bg-[var(--white)] border border-[var(--surface)] p-6 md:p-8 mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-5">
+                {creator?.pfp && <img src={creator.pfp} alt="" className="w-12 h-12" />}
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Lifetime Fees</p>
-                  <p className="text-[32px] font-bold tracking-tight text-[var(--text)]">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-1">Lifetime Fees</p>
+                  <p className="text-[28px] md:text-[36px] font-bold tracking-tight text-[var(--text)]">
                     {feesLam > 0 ? fmtSol(feesLam) : "0"}{" "}
-                    <span className="text-[var(--green)] text-[24px]">SOL</span>
+                    <span className="text-[var(--green)] text-[20px] md:text-[24px]">SOL</span>
                   </p>
                 </div>
               </div>
@@ -182,23 +195,23 @@ export default function Home() {
                 href={`https://bags.fm/${data.tokenMint}?ref=crisnewtonx`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="shrink-0 bg-[var(--green)] text-white font-bold py-2 px-4 text-[10px] uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] transition-colors"
+                className="shrink-0 bg-[var(--green)] text-white font-bold py-3 px-5 text-[11px] uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] transition-colors"
               >
                 Bags.fm
               </a>
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-[1px] bg-[var(--surface)] mb-4">
+            <div className="grid grid-cols-3 gap-3 mb-6">
               <Stat label="Claimed" value={totalClaimed > 0 ? `${fmtSol(totalClaimed)}` : "0"} unit="SOL" />
               <Stat label="Unclaimed" value={unclaimed > 0 ? `${fmtSol(unclaimed)}` : "0"} unit="SOL" warn={unclaimed > 0} />
-              <Stat label="Events" value={String(events.length)} sub={events.length > 0 ? ago(events[0].timestamp) : "—"} />
+              <Stat label="Events" value={String(events.length)} sub={events.length > 0 ? ago(events[0].timestamp) : "No claims yet"} />
             </div>
 
             {/* Progress */}
             {feesLam > 0 && (
-              <div className="bg-[var(--white)] border border-[var(--surface)] p-4 mb-4">
-                <div className="flex justify-between mb-2 text-[10px] font-bold uppercase tracking-[0.08em]">
+              <div className="bg-[var(--white)] border border-[var(--surface)] p-5 mb-6">
+                <div className="flex justify-between mb-2 text-[11px] font-bold uppercase tracking-[0.08em]">
                   <span className="text-[var(--text-variant)]">Claim Progress</span>
                   <span className="text-[var(--text)]">{claimPct.toFixed(1)}%</span>
                 </div>
@@ -210,28 +223,28 @@ export default function Home() {
 
             {/* Creators */}
             {data.creators.length > 0 && (
-              <div className="mb-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">Fee Share</p>
-                <div className="space-y-[1px]">
+              <div className="mb-6">
+                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-3">Fee Share</p>
+                <div className="space-y-2">
                   {data.creators.map((c, i) => (
-                    <div key={i} className="bg-[var(--white)] border border-[var(--surface)] p-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {c.pfp ? <img src={c.pfp} alt="" className="w-8 h-8" /> : (
-                          <div className="w-8 h-8 bg-[var(--green-10)] flex items-center justify-center text-[12px] font-bold text-[var(--green)]">
+                    <div key={i} className="bg-[var(--white)] border border-[var(--surface)] p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        {c.pfp ? <img src={c.pfp} alt="" className="w-10 h-10" /> : (
+                          <div className="w-10 h-10 bg-[var(--green-10)] flex items-center justify-center text-[14px] font-bold text-[var(--green)]">
                             {c.username.charAt(0).toUpperCase()}
                           </div>
                         )}
                         <div>
                           <div className="flex items-center gap-2">
-                            <a href={`https://x.com/${c.twitterUsername}`} target="_blank" className="text-[12px] font-bold text-[var(--link)] hover:text-[var(--green)]">
+                            <a href={`https://x.com/${c.twitterUsername}`} target="_blank" className="text-[14px] font-bold text-[var(--link)] hover:text-[var(--green)]">
                               @{c.twitterUsername || c.username}
                             </a>
-                            {c.isCreator && <span className="px-1.5 py-0.5 text-[8px] font-bold uppercase bg-[var(--green-10)] text-[#00A020]">Creator</span>}
+                            {c.isCreator && <span className="px-2 py-0.5 text-[9px] font-bold uppercase bg-[var(--green-10)] text-[#00A020]">Creator</span>}
                           </div>
-                          <p className="text-[10px] text-[var(--text-dim)]">{(c.royaltyBps / 100).toFixed(0)}% share</p>
+                          <p className="text-[11px] text-[var(--text-dim)] mt-0.5">{(c.royaltyBps / 100).toFixed(0)}% share</p>
                         </div>
                       </div>
-                      <span className="font-mono text-[10px] text-[var(--text-dim)]">{c.wallet.slice(0, 6)}...{c.wallet.slice(-4)}</span>
+                      <span className="font-mono text-[11px] text-[var(--text-dim)]">{c.wallet.slice(0, 6)}...{c.wallet.slice(-4)}</span>
                     </div>
                   ))}
                 </div>
@@ -240,25 +253,25 @@ export default function Home() {
 
             {/* Claim History */}
             {events.length > 0 && (
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">Claim History</p>
-                <div className="space-y-[1px]">
+              <div className="mb-6">
+                <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-3">Claim History</p>
+                <div className="space-y-2">
                   {events.map((ev, i) => (
                     <a
                       key={i}
                       href={`https://solscan.io/tx/${ev.signature}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between bg-[var(--white)] border border-[var(--surface)] p-3 hover:bg-[var(--surface-low)] transition-colors"
+                      className="flex items-center justify-between bg-[var(--white)] border border-[var(--surface)] p-4 hover:bg-[var(--surface-low)] transition-colors"
                     >
                       <div>
-                        <p className="text-[11px] font-bold text-[var(--text)]">
-                          {ev.wallet.slice(0, 6)}...{ev.wallet.slice(-4)}
-                          {ev.isCreator && <span className="ml-1.5 text-[9px] font-bold text-[var(--green)]">CREATOR</span>}
+                        <p className="text-[11px] text-[var(--text-dim)]">
+                          <span className="font-mono">{ev.wallet.slice(0, 6)}...{ev.wallet.slice(-4)}</span>
+                          {ev.isCreator && <span className="ml-2 text-[9px] font-bold text-[var(--green)] uppercase">Creator</span>}
                         </p>
-                        <p className="text-[10px] text-[var(--text-dim)]">{ago(ev.timestamp)}</p>
+                        <p className="text-[10px] text-[var(--text-dim)] mt-0.5">{ago(ev.timestamp)}</p>
                       </div>
-                      <span className="text-[12px] font-bold text-[var(--green)]">+{fmtSol(parseInt(ev.amount))} SOL</span>
+                      <span className="text-[16px] md:text-[18px] font-bold text-[var(--green)]">+{fmtSol(parseInt(ev.amount))} SOL</span>
                     </a>
                   ))}
                 </div>
@@ -267,25 +280,47 @@ export default function Home() {
 
             {/* Empty */}
             {feesLam === 0 && data.creators.length === 0 && events.length === 0 && (
-              <div className="bg-[var(--surface-low)] p-8 text-center">
-                <p className="text-[12px] font-bold text-[var(--text-variant)]">No fee data found</p>
-                <p className="text-[11px] text-[var(--text-dim)] mt-1">This token may be new or not a Bags token.</p>
+              <div className="bg-[var(--surface-low)] p-10 text-center">
+                <p className="text-[14px] font-bold text-[var(--text-variant)]">No fee data found</p>
+                <p className="text-[12px] text-[var(--text-dim)] mt-2">This token may be new or not a Bags token.</p>
               </div>
             )}
 
-            {/* Mint address */}
-            <div className="mt-4 text-center">
-              <p className="font-mono text-[10px] text-[var(--text-dim)] break-all">{data.tokenMint}</p>
+            {/* Mint address with copy */}
+            <div className="mt-6 mb-4 flex items-center justify-center gap-2">
+              <p className="font-mono text-[11px] text-[var(--text-dim)] break-all">{data.tokenMint}</p>
+              <button
+                onClick={handleCopyMint}
+                className="shrink-0 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--text-dim)] border border-[var(--surface)] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors"
+              >
+                {copied ? "Copied" : "Copy"}
+              </button>
             </div>
           </div>
         )}
 
         {/* Empty state before search */}
         {!data && !loading && !error && (
-          <div className="w-full max-w-2xl grid grid-cols-3 gap-[1px] bg-[var(--surface)]">
-            <InfoCard label="Data Source" value="Bags API" sub="Real-time on-chain" />
-            <InfoCard label="Analytics" value="Fee Tracking" sub="Lifetime fees & claims" />
-            <InfoCard label="Notifications" value="Live" sub="Toast alerts on new claims" green />
+          <div className="w-full max-w-3xl grid grid-cols-1 md:grid-cols-3 gap-4">
+            <InfoCard
+              icon="$"
+              label="Fee Tracking"
+              value="Lifetime Revenue"
+              sub="See total fees generated by any Bags token, broken down by claimed and unclaimed amounts."
+            />
+            <InfoCard
+              icon="@"
+              label="Creator Analytics"
+              value="Fee Share Breakdown"
+              sub="View all fee recipients, their royalty splits, and individual claim history."
+              green
+            />
+            <InfoCard
+              icon="!"
+              label="Live Monitoring"
+              value="Real-Time Alerts"
+              sub="Get instant toast notifications when new claim events are detected, polling every 15 seconds."
+            />
           </div>
         )}
       </div>
@@ -295,22 +330,25 @@ export default function Home() {
 
 function Stat({ label, value, unit, sub, warn }: { label: string; value: string; unit?: string; sub?: string; warn?: boolean }) {
   return (
-    <div className="bg-[var(--white)] p-4">
-      <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--text-dim)]">{label}</p>
-      <p className={`text-[16px] font-bold mt-0.5 ${warn ? "text-[#B08C00]" : "text-[var(--text)]"}`}>
-        {value} {unit && <span className="text-[12px] text-[var(--text-variant)]">{unit}</span>}
+    <div className="bg-[var(--white)] border border-[var(--surface)] p-5 md:p-6">
+      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-dim)] mb-1">{label}</p>
+      <p className={`text-[24px] md:text-[32px] font-bold ${warn ? "text-[#B08C00]" : "text-[var(--text)]"}`}>
+        {value} {unit && <span className="text-[14px] md:text-[16px] text-[var(--text-variant)]">{unit}</span>}
       </p>
-      {sub && <p className="text-[9px] text-[var(--text-dim)] mt-0.5">{sub}</p>}
+      {sub && <p className="text-[10px] text-[var(--text-dim)] mt-1">{sub}</p>}
     </div>
   );
 }
 
-function InfoCard({ label, value, sub, green }: { label: string; value: string; sub: string; green?: boolean }) {
+function InfoCard({ icon, label, value, sub, green }: { icon: string; label: string; value: string; sub: string; green?: boolean }) {
   return (
-    <div className="bg-[var(--white)] p-5">
-      <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--text-dim)]">{label}</p>
-      <p className={`text-[14px] font-bold mt-1 ${green ? "text-[var(--green)]" : ""}`}>{value}</p>
-      <p className="text-[10px] text-[var(--text-dim)] mt-0.5">{sub}</p>
+    <div className="bg-[var(--white)] border border-[var(--surface)] p-6">
+      <div className="w-10 h-10 bg-[var(--green-10)] flex items-center justify-center mb-4">
+        <span className={`text-[18px] font-bold ${green ? "text-[var(--green)]" : "text-[var(--text-variant)]"}`}>{icon}</span>
+      </div>
+      <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-dim)]">{label}</p>
+      <p className={`text-[16px] font-bold mt-1 ${green ? "text-[var(--green)]" : "text-[var(--text)]"}`}>{value}</p>
+      <p className="text-[12px] text-[var(--text-dim)] mt-2 leading-relaxed">{sub}</p>
     </div>
   );
 }
