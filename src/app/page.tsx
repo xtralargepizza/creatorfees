@@ -41,17 +41,17 @@ function copyToClipboard(text: string) { navigator.clipboard.writeText(text).cat
 const COLORS = ["#00D62B", "#33E155", "#66EC80", "#99F4AA", "#CCF9D4", "#E0FBE8"];
 
 const QUICK_LINKS = [
-  { href: "https://bags.fm/launch", label: "Launch Token", icon: "🚀", desc: "Launch a new Bags token" },
-  { href: "https://bags.fm/apps/dexscreener", label: "DexScreener", icon: "📊", desc: "Pay for DexScreener listing" },
-  { href: "https://bags.fm/apps/compound-liquidity", label: "Compound Liquidity", icon: "💧", desc: "Compound your LP" },
-  { href: "https://bags.fm/apps/dex-boost", label: "Dex Boost", icon: "⚡", desc: "Boost DEX visibility" },
-  { href: "https://bags.fm/apps/dividendsbot", label: "DividendsBot", icon: "🤖", desc: "Auto dividend payouts" },
-  { href: "https://bags.fm/apps/bagsamm", label: "BagsAMM", icon: "🔄", desc: "Bags automated market maker" },
-  { href: "https://bags.fm/apps/x", label: "Connect X", icon: "𝕏", desc: "Link X for fee sharing" },
-  { href: "https://bags.fm/apps/tiktok", label: "Connect TikTok", icon: "🎵", desc: "TikTok fee sharing" },
-  { href: "https://bags.fm/apps/moltbook", label: "Connect Moltbook", icon: "📖", desc: "Moltbook fee sharing" },
-  { href: "https://bags.fm/apps/github", label: "Connect GitHub", icon: "🐙", desc: "GitHub fee sharing" },
-  { href: "https://bags.fm/apps/kick", label: "Connect Kick", icon: "🎮", desc: "Kick streamer royalties" },
+  { href: "https://bags.fm/launch", label: "Launch Token", desc: "Launch a new Bags token" },
+  { href: "https://bags.fm/apps/dexscreener", label: "DexScreener", desc: "Pay for DexScreener listing" },
+  { href: "https://bags.fm/apps/compound-liquidity", label: "Compound Liquidity", desc: "Compound your LP" },
+  { href: "https://bags.fm/apps/dex-boost", label: "Dex Boost", desc: "Boost DEX visibility" },
+  { href: "https://bags.fm/apps/dividendsbot", label: "DividendsBot", desc: "Auto dividend payouts" },
+  { href: "https://bags.fm/apps/bagsamm", label: "BagsAMM", desc: "Bags automated market maker" },
+  { href: "https://bags.fm/apps/x", label: "Connect X", desc: "Link X for fee sharing" },
+  { href: "https://bags.fm/apps/tiktok", label: "Connect TikTok", desc: "TikTok fee sharing" },
+  { href: "https://bags.fm/apps/moltbook", label: "Connect Moltbook", desc: "Moltbook fee sharing" },
+  { href: "https://bags.fm/apps/github", label: "Connect GitHub", desc: "GitHub fee sharing" },
+  { href: "https://bags.fm/apps/kick", label: "Connect Kick", desc: "Kick streamer royalties" },
 ];
 
 export default function Home() {
@@ -62,6 +62,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [copied, setCopied] = useState(false);
+  const [appsOpen, setAppsOpen] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIdx, setHistoryIdx] = useState(-1);
   const prevEventsRef = useRef<string[]>([]);
@@ -172,31 +173,28 @@ export default function Home() {
 
       {/* ═══ STICKY NAV + SEARCH (when results showing) ═══ */}
       {hasResults && (
-        <div className="sticky top-0 z-50 bg-[var(--bg)] border-b border-[var(--border)] py-2.5">
-          <div className="mx-auto max-w-4xl px-4 flex items-center gap-3">
-            {/* Back button */}
+        <div className="sticky top-0 z-50 bg-[var(--bg)] border-b border-[var(--border)]">
+          <div className="mx-auto max-w-4xl px-4 py-2.5 flex items-center gap-2 md:gap-3">
             <button onClick={goBack} className="shrink-0 w-10 h-10 flex items-center justify-center border border-[var(--border)] bg-[var(--card)] hover:border-[var(--green)] hover:text-[var(--green)] text-[var(--text-2)]">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
             </button>
-            {/* Search */}
             <form onSubmit={handleSearch} className="flex-1 flex h-10">
-              <input
-                type="text"
-                value={mint}
-                onChange={(e) => { setMint(e.target.value); setError(""); }}
+              <input type="text" value={mint} onChange={(e) => { setMint(e.target.value); setError(""); }}
                 placeholder="Paste Bags CA here..."
-                className="flex-1 bg-[var(--card)] border-2 border-r-0 border-[var(--border)] px-4 text-[13px] text-[var(--text)] placeholder:text-[var(--text-3)] outline-none font-mono focus:border-[var(--green)]"
-              />
+                className="flex-1 bg-[var(--card)] border-2 border-r-0 border-[var(--border)] px-4 text-[13px] text-[var(--text)] placeholder:text-[var(--text-3)] outline-none font-mono focus:border-[var(--green)]" />
               <button type="submit" disabled={loading} className="bg-[var(--green)] text-white font-bold px-5 text-[12px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)] disabled:opacity-50 shrink-0">
                 {loading ? "..." : "Go"}
               </button>
             </form>
-            {/* Logo home link */}
-            <a href="/" className="shrink-0 hidden sm:block">
-              <img src="/logo.svg" alt="" className="h-5" />
-            </a>
+            <button onClick={() => setAppsOpen(!appsOpen)}
+              className={`shrink-0 h-10 px-4 border text-[12px] font-bold uppercase tracking-[0.06em] transition-colors ${appsOpen ? "bg-[var(--green)] text-white border-[var(--green)]" : "bg-[var(--card)] text-[var(--text-2)] border-[var(--border)] hover:border-[var(--green)] hover:text-[var(--green)]"}`}>
+              Apps
+            </button>
+            <a href="/" className="shrink-0 hidden md:block"><img src="/logo.svg" alt="" className="h-5" /></a>
           </div>
-          {error && <p className="mx-auto max-w-4xl px-4 mt-1 text-[11px] font-bold text-[var(--error)]">{error}</p>}
+          {error && <p className="mx-auto max-w-4xl px-4 pb-2 text-[11px] font-bold text-[var(--error)]">{error}</p>}
+          {/* Apps dropdown */}
+          {appsOpen && <AppsPanel onClose={() => setAppsOpen(false)} />}
         </div>
       )}
 
@@ -232,20 +230,16 @@ export default function Home() {
             {error && <p className="mt-2 text-center text-[13px] font-bold text-[var(--error)]">{error}</p>}
           </form>
 
-          {/* Quick Links on homepage */}
-          <div className="w-full max-w-3xl mt-12">
-            <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--text-3)] mb-3 text-center">Quick Bags Tools</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {QUICK_LINKS.map(l => (
-                <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
-                  className="bg-[var(--card)] border border-[var(--border)] px-3 py-2 text-[12px] font-semibold text-[var(--text)] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors flex items-center gap-1.5"
-                  title={l.desc}>
-                  <span className="text-[14px]">{l.icon}</span>
-                  {l.label}
-                </a>
-              ))}
+          {/* Apps toggle on homepage */}
+          <button onClick={() => setAppsOpen(!appsOpen)}
+            className={`mt-10 px-6 py-2.5 text-[13px] font-bold uppercase tracking-[0.06em] border transition-colors ${appsOpen ? "bg-[var(--green)] text-white border-[var(--green)]" : "bg-[var(--card)] text-[var(--text-2)] border-[var(--border)] hover:border-[var(--green)] hover:text-[var(--green)]"}`}>
+            {appsOpen ? "Close Apps" : "Bags Apps"}
+          </button>
+          {appsOpen && (
+            <div className="w-full max-w-3xl mt-4">
+              <AppsPanel onClose={() => setAppsOpen(false)} />
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -454,16 +448,14 @@ export default function Home() {
             </div>
           )}
 
-          {/* Quick Links below results */}
-          <div className="mt-8 border-t border-[var(--border)] pt-6">
-            <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--text-3)] mb-3">Quick Bags Tools</p>
-            <div className="flex flex-wrap gap-2">
-              {QUICK_LINKS.slice(0, 6).map(l => (
+          {/* Bags Apps below results */}
+          <div className="mt-8 border-t border-[var(--border)] pt-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {QUICK_LINKS.slice(0, 8).map(l => (
                 <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
-                  className="bg-[var(--card)] border border-[var(--border)] px-3 py-2 text-[11px] font-semibold text-[var(--text)] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors flex items-center gap-1.5"
-                  title={l.desc}>
-                  <span className="text-[13px]">{l.icon}</span>
-                  {l.label}
+                  className="bg-[var(--card)] border border-[var(--border)] p-3 hover:border-[var(--green)] transition-colors group">
+                  <p className="text-[12px] font-bold text-[var(--text)] group-hover:text-[var(--green)]">{l.label}</p>
+                  <p className="text-[10px] text-[var(--text-3)] mt-0.5">{l.desc}</p>
                 </a>
               ))}
             </div>
@@ -483,6 +475,28 @@ function KPI({ label, value, unit, sub, accent }: { label: string; value: string
         {unit && <span className="text-[12px] text-[var(--text-3)] ml-1">{unit}</span>}
       </p>
       {sub && <p className="text-[10px] text-[var(--text-3)] mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function AppsPanel({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="border-t border-[var(--border)] bg-[var(--card)]">
+      <div className="mx-auto max-w-4xl px-4 py-5">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--text-2)]">Bags Apps</p>
+          <button onClick={onClose} className="text-[11px] font-bold text-[var(--text-3)] hover:text-[var(--text)] uppercase tracking-[0.06em]">Close</button>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {QUICK_LINKS.map(l => (
+            <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
+              className="border border-[var(--border)] bg-[var(--bg)] p-3 hover:border-[var(--green)] transition-colors group">
+              <p className="text-[12px] font-bold text-[var(--text)] group-hover:text-[var(--green)]">{l.label}</p>
+              <p className="text-[10px] text-[var(--text-3)] mt-0.5 leading-snug">{l.desc}</p>
+            </a>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
