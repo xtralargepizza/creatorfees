@@ -1,7 +1,7 @@
 # ROADMAP.md
 
-> **Current Phase**: Not started
-> **Milestone**: v1.0 — Hackathon MVP
+> **Current Phase**: 5
+> **Milestone**: v1.1 — Dark/Light Mode
 
 ## Must-Haves (from SPEC)
 - [ ] Search by token mint → fee analytics
@@ -28,6 +28,11 @@
 **Deliverable**: /token/[mint] page with full analytics from Bags API
 
 ### Phase 4: Polish & Deploy
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Landing page, search, responsive design, deploy to Vercel
 **Deliverable**: Public URL, polished UI, hackathon-ready
+
+### Phase 5: Dark/Light Mode Toggle
+**Status**: ⬜ Not Started
+**Objective**: Add dark/light theme toggle next to Apps button in sticky nav. Persist preference in localStorage. Dark mode with proper color tokens for all components.
+**Deliverable**: Working theme toggle, dark mode CSS variables, all pages render correctly in both modes

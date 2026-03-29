@@ -1,19 +1,23 @@
 # STATE.md — Project Memory
 
 ## Current Position
-- **Phase**: Not started
-- **Last Action**: Project initialized
-- **Next Step**: /plan 1
+- **Phase**: 5 — Dark/Light Mode Toggle
+- **Task**: Planning complete, ready for execution
+- **Status**: Plans 5.1 and 5.2 created
+
+## Plans
+- **5.1** (Wave 1): Dark mode CSS variables + ThemeProvider component
+- **5.2** (Wave 2): Wire ThemeProvider into layout + toggle button in nav + deploy
 
 ## Key Decisions
 - Stack: Next.js 15 + TypeScript + Tailwind v4
-- Data: All from Bags API (no backend DB)
-- Auth: None (public dashboard)
-- Deploy target: Vercel
+- Theme: CSS variables with `[data-theme="dark"]` selector
+- Persistence: localStorage("theme")
+- Toggle: SVG sun/moon icon next to Apps button in sticky nav
+- Default: Light mode
 
 ## Known Context
-- Bags API base: https://public-api-v2.bags.fm/api/v1/
-- API key stored in .env.local
-- Partner config: DceKxtaxVHxiKE4B8CeHNFHe4ms5p3VmuLAUbLAcbSaB
-- Existing files: bags-api.ts (client), risk-engine.ts (scoring), globals.css
-- Rate limit: 1000 req/hr per IP
+- All components use CSS variables (--bg, --card, --border, --text, --text-2, --text-3, --green)
+- page.tsx has ~72 references to CSS variables — all will auto-switch
+- Sticky nav already has Apps button — toggle goes next to it
+- Deploy target: Vercel (bagsscan.vercel.app)
