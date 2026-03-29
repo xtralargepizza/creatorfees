@@ -73,6 +73,7 @@ export default function Home() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [copied, setCopied] = useState(false);
   const [appsOpen, setAppsOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIdx, setHistoryIdx] = useState(-1);
   const prevEventsRef = useRef<string[]>([]);
@@ -270,6 +271,26 @@ export default function Home() {
               className="h-10 px-5 border border-[var(--border)] bg-[var(--card)] text-[var(--text-2)] text-[12px] font-bold uppercase tracking-[0.06em] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors">
               Bags Apps
             </button>
+            <div className="relative">
+              <button onClick={() => setInfoOpen(!infoOpen)}
+                className="h-10 w-10 flex items-center justify-center border border-[var(--border)] bg-[var(--card)] text-[var(--text-2)] text-[14px] font-bold hover:border-[var(--green)] hover:text-[var(--green)] transition-colors">
+                i
+              </button>
+              {infoOpen && (
+                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-72 bg-[var(--card)] border border-[var(--border)] shadow-xl p-4 z-50 text-[12px] text-[var(--text-2)] leading-relaxed">
+                  <p className="font-bold text-[var(--text)] mb-2">How to use CreatorFees</p>
+                  <ol className="space-y-1.5 list-decimal list-inside text-[11px]">
+                    <li><strong>Fee Check</strong> — Paste any Bags token CA to see lifetime fees, claim history, and fee share breakdown</li>
+                    <li><strong>My Tokens</strong> — Enter your wallet to find all tokens you admin and their earnings</li>
+                    <li><strong>Claims</strong> — Check unclaimed fee positions across all your tokens</li>
+                    <li><strong>Who Earns?</strong> — Look up any Twitter/TikTok handle to see their Bags earnings</li>
+                    <li><strong>Price</strong> — Get a trade quote for any Bags token before buying</li>
+                    <li><strong>Calculator</strong> — Estimate fee revenue at different daily volume levels</li>
+                  </ol>
+                  <button onClick={() => setInfoOpen(false)} className="mt-3 text-[10px] font-bold text-[var(--green)] uppercase tracking-[0.06em]">Got it</button>
+                </div>
+              )}
+            </div>
           </div>
           {!hasResults && appsOpen && <AppsPanel onClose={() => setAppsOpen(false)} />}
         </div>
