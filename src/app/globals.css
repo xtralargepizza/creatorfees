@@ -1,257 +1,85 @@
 @import "tailwindcss";
 
 /* ─── OpenRunde Font ──────────────────────────────── */
-@font-face {
-  font-family: 'OpenRunde';
-  src: url('/fonts/OpenRunde-Regular.woff2') format('woff2'),
-       url('/fonts/OpenRunde-Regular.woff') format('woff');
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'OpenRunde';
-  src: url('/fonts/OpenRunde-Medium.woff2') format('woff2'),
-       url('/fonts/OpenRunde-Medium.woff') format('woff');
-  font-weight: 500;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'OpenRunde';
-  src: url('/fonts/OpenRunde-Semibold.woff2') format('woff2'),
-       url('/fonts/OpenRunde-Semibold.woff') format('woff');
-  font-weight: 600;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'OpenRunde';
-  src: url('/fonts/OpenRunde-Bold.woff2') format('woff2'),
-       url('/fonts/OpenRunde-Bold.woff') format('woff');
-  font-weight: 700;
-  font-display: swap;
-}
+@font-face { font-family: 'OpenRunde'; src: url('/fonts/OpenRunde-Regular.woff2') format('woff2'), url('/fonts/OpenRunde-Regular.woff') format('woff'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'OpenRunde'; src: url('/fonts/OpenRunde-Medium.woff2') format('woff2'), url('/fonts/OpenRunde-Medium.woff') format('woff'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'OpenRunde'; src: url('/fonts/OpenRunde-Semibold.woff2') format('woff2'), url('/fonts/OpenRunde-Semibold.woff') format('woff'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'OpenRunde'; src: url('/fonts/OpenRunde-Bold.woff2') format('woff2'), url('/fonts/OpenRunde-Bold.woff') format('woff'); font-weight: 700; font-display: swap; }
 
 :root {
   --green: #00D62B;
   --green-hover: #00C025;
   --green-10: rgba(0, 214, 43, 0.08);
   --bg: #F5F5EE;
-  --surface-low: #F1F1EA;
-  --surface: #E8E9E1;
-  --surface-high: #E2E3DB;
-  --surface-highest: #DCDED5;
-  --white: #FFFFFF;
+  --card: #FFFFFF;
+  --card-hover: #FAFAF6;
+  --border: #E5E5DD;
+  --border-light: #EDEDE6;
   --text: #0D0D0F;
-  --text-variant: #5A5C57;
-  --text-dim: #767772;
-  --outline: #ADAEA7;
-  --link: #1A1F2E;
-  --error: #B02500;
-  --primary-dark: #005D0C;
+  --text-secondary: #6B6B6F;
+  --text-dim: #9B9B9F;
+  --error: #D32F2F;
 }
 
-/* ─── Base ────────────────────────────────────────── */
-html {
-  font-size: 13px;
-  min-height: 100dvh;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 14px;
-  }
-}
-
+html, body { min-height: 100dvh; }
 body {
   background: var(--bg);
   color: var(--text);
   font-family: 'OpenRunde', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  min-height: 100dvh;
-  width: 100%;
   display: flex;
   flex-direction: column;
 }
 
-*, *::before, *::after { border-radius: 0 !important; }
+a, button, input { transition: all 0.15s ease; }
 
-/* ─── Scrollbar (cross-browser) ───────────────────── */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(--surface-low); }
-::-webkit-scrollbar-thumb { background: var(--green); }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--green); border-radius: 2px; }
 
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--green) var(--surface-low);
-}
-
-/* ─── Container ───────────────────────────────────── */
-.container-main {
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-@media (min-width: 768px) {
-  .container-main {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container-main {
-    padding-left: 3rem;
-    padding-right: 3rem;
-  }
-}
-
-@media (min-width: 1536px) {
-  .container-main {
-    max-width: 1400px;
-  }
-}
-
-/* ─── Card ────────────────────────────────────────── */
-.card {
-  background: var(--white);
-  border: 1px solid var(--surface);
-  padding: 1rem;
-}
-
-@media (min-width: 768px) {
-  .card {
-    padding: 1.25rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .card {
-    padding: 1.5rem;
-  }
-}
-
-/* ─── Input Search ────────────────────────────────── */
-.input-search {
-  height: 48px;
+/* Pill-shaped elements */
+.pill {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px !important;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
   font-size: 14px;
-  padding: 0 1rem;
-  width: 100%;
-  background: var(--white);
-  border: 1px solid var(--surface);
   color: var(--text);
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s ease;
+  cursor: pointer;
+}
+.pill:hover { background: var(--card-hover); border-color: #D0D0C8; }
+
+/* Rounded cards */
+.rcard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px !important;
+  overflow: hidden;
 }
 
-.input-search::placeholder {
-  color: var(--text-dim);
+/* Stat pills */
+.stat-pill {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px !important;
+  padding: 16px;
+  text-align: center;
 }
 
-.input-search:focus {
-  border-color: var(--green);
-}
+/* Progress */
+.progress-bar { height: 8px; background: var(--border); border-radius: 4px !important; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--green); border-radius: 4px !important; }
 
-/* ─── Interactive Transitions ─────────────────────── */
-a,
-button,
-input,
-select,
-textarea,
-[role="button"] {
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
-}
-
-/* ─── Responsive Spacing Utilities ────────────────── */
-.p-responsive {
-  padding: 1rem;
-}
-.px-responsive {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-.py-responsive {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-.gap-responsive {
-  gap: 0.75rem;
-}
-
-@media (min-width: 768px) {
-  .p-responsive {
-    padding: 1.5rem;
-  }
-  .px-responsive {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-  .py-responsive {
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
-  }
-  .gap-responsive {
-    gap: 1rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .p-responsive {
-    padding: 2rem;
-  }
-  .px-responsive {
-    padding-left: 3rem;
-    padding-right: 3rem;
-  }
-  .py-responsive {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-  }
-  .gap-responsive {
-    gap: 1.25rem;
-  }
-}
-
-/* ─── Progress Bar ────────────────────────────────── */
-.progress-bar { height: 10px; background: var(--surface-highest); overflow: hidden; }
-.progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--primary-dark)); }
-
-/* ─── Toast Animation ─────────────────────────────── */
-@keyframes toast-in {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-@keyframes toast-out {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(100%); opacity: 0; }
-}
+/* Toast */
+@keyframes toast-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes toast-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 .toast-enter { animation: toast-in 0.3s ease-out forwards; }
 .toast-exit { animation: toast-out 0.3s ease-in forwards; }
 
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-slide-up { animation: slide-up 0.2s ease-out forwards; }
-
-/* ─── Placeholder Cycle Animation ────────────────── */
-@keyframes placeholder-cycle {
-  0%, 100% { opacity: 0; }
-  10%, 90% { opacity: 1; }
-}
-.placeholder-cycle {
-  animation: placeholder-cycle 2.5s ease-in-out;
-}
-
-/* ─── Copy Flash Animation ───────────────────────── */
-@keyframes copy-flash {
-  0% { background-color: rgba(0, 214, 43, 0.2); }
-  100% { background-color: transparent; }
-}
-.copy-flash {
-  animation: copy-flash 0.5s ease-out;
-}
+@keyframes slide-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.animate-slide-up { animation: slide-up 0.25s ease-out forwards; }
