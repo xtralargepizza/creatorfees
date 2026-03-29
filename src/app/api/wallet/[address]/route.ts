@@ -26,8 +26,9 @@ export async function GET(
 
     if (claimResult.status === "fulfilled") {
       const positions = Array.isArray(claimResult.value) ? claimResult.value : [];
-      positions.forEach((p: { baseMint?: string }) => {
-        if (p.baseMint) mintSet.add(p.baseMint);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      positions.forEach((p: any) => {
+        if (p.baseMint) mintSet.add(p.baseMint as string);
       });
     }
 
