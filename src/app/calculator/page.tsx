@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
+import ToolNav from "../ToolNav";
 
 const MIGRATION_THRESHOLD = 85; // SOL
 
@@ -56,20 +56,9 @@ export default function CalculatorPage() {
   }, [solAmount, config]);
 
   return (
-    <section style={{ padding: "24px 16px 64px" }}>
-      {/* Back link */}
-      <Link
-        href="/"
-        style={{
-          display: "inline-flex", alignItems: "center", gap: "6px",
-          fontSize: "12px", fontWeight: 700, color: "var(--text-2)",
-          textDecoration: "none", marginBottom: "24px",
-          letterSpacing: "0.05em", textTransform: "uppercase" as const,
-        }}
-      >
-        &larr; Back
-      </Link>
-
+    <>
+      <ToolNav />
+      <section style={{ padding: "24px 16px 64px" }}>
       {/* Header */}
       <div style={{ marginBottom: "32px" }}>
         <h2 style={{
@@ -192,6 +181,7 @@ export default function CalculatorPage() {
         </div>
       </div>
     </section>
+    </>
   );
 }
 

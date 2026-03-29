@@ -45,7 +45,6 @@ const TOOLS = [
   { href: "/wallet", label: "My Tokens", desc: "See all tokens you earn fees from" },
   { href: "/claim", label: "Claim Center", desc: "Find unclaimed fees across all tokens" },
   { href: "/lookup", label: "Who Earns?", desc: "Look up any social handle's earnings" },
-  { href: "/explore", label: "Token Explorer", desc: "Browse all Bags token pools" },
   { href: "/quote", label: "Price Check", desc: "Get trade quotes for any token" },
   { href: "/calculator", label: "Launch Calculator", desc: "Estimate fee revenue before launching" },
 ];

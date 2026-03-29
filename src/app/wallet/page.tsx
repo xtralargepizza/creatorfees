@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useTheme } from "../ThemeProvider";
+import ToolNav from "../ToolNav";
 
 interface WalletToken {
   mint: string;
@@ -77,13 +78,11 @@ export default function WalletPage() {
 
   return (
     <>
+      <ToolNav />
       {/* ═══ STICKY NAV (when results showing) ═══ */}
       {hasResults && (
         <div className="sticky top-0 z-50 bg-[var(--bg)] border-b border-[var(--border)]">
           <div className="mx-auto max-w-4xl px-4 py-2.5 flex items-center gap-2 md:gap-3">
-            <Link href="/" className="shrink-0 w-10 h-10 flex items-center justify-center border border-[var(--border)] bg-[var(--card)] hover:border-[var(--green)] hover:text-[var(--green)] text-[var(--text-2)]">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-            </Link>
             <form onSubmit={handleSearch} className="flex-1 flex h-10">
               <input
                 type="text"
@@ -112,10 +111,6 @@ export default function WalletPage() {
       {/* ═══ HERO (before search) ═══ */}
       {!hasResults && (
         <div className="flex flex-col items-center justify-center text-center min-h-[80vh] px-4">
-          <Link href="/" className="mb-6 text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--text-3)] hover:text-[var(--green)] flex items-center gap-1.5">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-            Back to Home
-          </Link>
           <img src="/logo.svg" alt="CreatorFees" className="h-12 md:h-16 mb-6" />
           <h1 className="text-[32px] md:text-[48px] lg:text-[60px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
             My <span className="text-[var(--green)]">Tokens</span>

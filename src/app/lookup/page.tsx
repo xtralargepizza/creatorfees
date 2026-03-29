@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import ToolNav from "../ToolNav";
 
 interface SocialResult {
   username: string;
@@ -75,13 +76,9 @@ export default function LookupPage() {
   }, [provider, username]);
 
   return (
-    <section className="px-4 sm:px-6 md:px-8 lg:px-10 pt-6 pb-16 mx-auto max-w-3xl">
-      {/* Back */}
-      <a href="/" className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[var(--text-2)] hover:text-[var(--green)] transition-colors mb-6">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-        Back
-      </a>
-
+    <>
+      <ToolNav />
+      <section className="px-4 sm:px-6 md:px-8 lg:px-10 pt-6 pb-16 mx-auto max-w-3xl">
       {/* Title */}
       <div className="mb-8">
         <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-[var(--text-3)] mb-3">
@@ -198,5 +195,6 @@ export default function LookupPage() {
         </div>
       )}
     </section>
+    </>
   );
 }

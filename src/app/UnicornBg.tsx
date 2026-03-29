@@ -15,14 +15,8 @@ export default function VideoBg() {
   }, []);
 
   return (
-    <div data-video-bg className="fixed inset-0 z-0 pointer-events-none" style={{ mixBlendMode: "screen" }}>
-      <video
-        ref={vid}
-        autoPlay
-        muted
-        playsInline
-        className="w-full h-full object-cover"
-      >
+    <div data-video-bg className="fixed inset-0 z-0 pointer-events-none" style={{ mixBlendMode: "screen", filter: "blur(2px)", opacity: 0.05 }}>
+      <video ref={vid} autoPlay muted playsInline className="w-full h-full object-cover">
         <source src="/bg-video.webm" type="video/webm" />
       </video>
     </div>
