@@ -52,6 +52,7 @@
 /* ─── Base ────────────────────────────────────────── */
 html {
   font-size: 13px;
+  min-height: 100dvh;
 }
 
 @media (min-width: 768px) {
@@ -68,6 +69,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100dvh;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 *, *::before, *::after { border-radius: 0 !important; }
@@ -234,3 +237,21 @@ textarea,
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-slide-up { animation: slide-up 0.2s ease-out forwards; }
+
+/* ─── Placeholder Cycle Animation ────────────────── */
+@keyframes placeholder-cycle {
+  0%, 100% { opacity: 0; }
+  10%, 90% { opacity: 1; }
+}
+.placeholder-cycle {
+  animation: placeholder-cycle 2.5s ease-in-out;
+}
+
+/* ─── Copy Flash Animation ───────────────────────── */
+@keyframes copy-flash {
+  0% { background-color: rgba(0, 214, 43, 0.2); }
+  100% { background-color: transparent; }
+}
+.copy-flash {
+  animation: copy-flash 0.5s ease-out;
+}

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen antialiased bg-[var(--bg)]">
+      <body className="min-h-screen flex flex-col antialiased bg-[var(--bg)]">
         {/* Nav */}
         <nav className="sticky top-0 z-50 w-full border-b border-[var(--surface)] bg-[var(--bg)]/90 backdrop-blur-md">
           <div className="mx-auto flex h-14 md:h-16 max-w-[1400px] items-center justify-between px-4 md:px-8 lg:px-12">
@@ -30,11 +30,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </nav>
 
-        <main className="mx-auto max-w-[1400px] px-4 md:px-8 lg:px-12 pt-6 pb-16">
+        <main className="flex-1 mx-auto w-full max-w-[1400px] px-4 md:px-8 lg:px-12 pt-6 pb-16">
           {children}
         </main>
 
-        <footer className="w-full border-t border-[var(--surface)] py-5">
+        <footer className="mt-auto w-full border-t border-[var(--surface)] py-5">
           <div className="mx-auto max-w-[1400px] px-4 md:px-8 lg:px-12 flex items-center justify-between text-[10px] text-[var(--text-dim)]">
             <span>
               Built for the{" "}
