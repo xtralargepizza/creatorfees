@@ -41,6 +41,15 @@ function copyToClipboard(text: string) { navigator.clipboard.writeText(text).cat
 
 const COLORS = ["#00D62B", "#33E155", "#66EC80", "#99F4AA", "#CCF9D4", "#E0FBE8"];
 
+const TOOLS = [
+  { href: "/wallet", label: "My Tokens", desc: "See all tokens you earn fees from" },
+  { href: "/claim", label: "Claim Center", desc: "Find unclaimed fees across all tokens" },
+  { href: "/lookup", label: "Who Earns?", desc: "Look up any social handle's earnings" },
+  { href: "/explore", label: "Token Explorer", desc: "Browse all Bags token pools" },
+  { href: "/quote", label: "Price Check", desc: "Get trade quotes for any token" },
+  { href: "/calculator", label: "Launch Calculator", desc: "Estimate fee revenue before launching" },
+];
+
 const QUICK_LINKS = [
   { href: "https://bags.fm/launch", label: "Launch Token", desc: "Launch a new Bags token" },
   { href: "https://bags.fm/apps/dexscreener", label: "DexScreener", desc: "Pay for DexScreener listing" },
@@ -498,24 +507,41 @@ function AppsPanel({ onClose }: { onClose: () => void }) {
       <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 pointer-events-none">
         <div className="bg-[var(--card)] border border-[var(--border)] shadow-2xl w-full max-w-lg pointer-events-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-            <p className="text-[13px] font-bold text-[var(--text)]">Bags Apps</p>
+            <p className="text-[13px] font-bold text-[var(--text)]">CreatorFees Tools</p>
             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-[var(--text-3)] hover:text-[var(--text)] transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
           </div>
-          <div className="p-4 grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
-            {QUICK_LINKS.map(l => (
-              <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
-                className="border border-[var(--border)] bg-[var(--bg)] p-3 hover:border-[var(--green)] transition-colors group">
-                <p className="text-[12px] font-bold text-[var(--text)] group-hover:text-[var(--green)]">{l.label}</p>
-                <p className="text-[10px] text-[var(--text-3)] mt-0.5 leading-snug">{l.desc}</p>
-              </a>
-            ))}
+          {/* Internal Tools */}
+          <div className="p-4 pb-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--green)] mb-2">Tools</p>
+            <div className="grid grid-cols-2 gap-2">
+              {TOOLS.map(t => (
+                <a key={t.href} href={t.href} onClick={onClose}
+                  className="border border-[var(--border)] bg-[var(--bg)] p-3 hover:border-[var(--green)] transition-colors group">
+                  <p className="text-[12px] font-bold text-[var(--text)] group-hover:text-[var(--green)]">{t.label}</p>
+                  <p className="text-[10px] text-[var(--text-3)] mt-0.5 leading-snug">{t.desc}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+          {/* External Bags Apps */}
+          <div className="p-4 pt-2 max-h-[30vh] overflow-y-auto">
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--text-3)] mb-2">Bags Apps</p>
+            <div className="grid grid-cols-2 gap-2">
+              {QUICK_LINKS.map(l => (
+                <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
+                  className="border border-[var(--border)] bg-[var(--bg)] p-2.5 hover:border-[var(--green)] transition-colors group">
+                  <p className="text-[11px] font-bold text-[var(--text)] group-hover:text-[var(--green)]">{l.label}</p>
+                  <p className="text-[9px] text-[var(--text-3)] mt-0.5 leading-snug">{l.desc}</p>
+                </a>
+              ))}
+            </div>
           </div>
           <div className="p-3 border-t border-[var(--border)]">
             <a href="https://bags.fm/launch?ref=crisnewtonx" target="_blank" rel="noopener noreferrer"
               className="block w-full bg-[var(--green)] text-white text-center font-bold py-2.5 text-[12px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)] transition-colors">
-              Launch a Token
+              Launch a Token on Bags
             </a>
           </div>
         </div>

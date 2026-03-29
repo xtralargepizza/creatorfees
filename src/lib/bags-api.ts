@@ -212,18 +212,39 @@ export class BagsApiClient {
     });
   }
 
-  // ─── Partner ───────────────────────────────────────────────
-  async getPartnerStats(partnerConfigKey: string) {
-    return this.request("GET", "/token-launch/partner-stats", {
-      partnerConfigKey,
-    });
+  // ─── Fee Share Admin ────────────────────────────────────────
+  async getAdminList(wallet: string): Promise<{ tokenMints: string[] }> {
+    return this.request<{ tokenMints: string[] }>("GET", "/fee-share/admin/list", { wallet });
   }
 
-  async getPartnerClaimTransactions(partnerWallet: string, tokenMint: string) {
-    return this.request("POST", "/token-launch/partner-claim-txs", undefined, {
-      partnerWallet,
-      tokenMint,
-    });
+  // ─── Social Wallet Lookup ─────────────────────────────────
+  async getFeeShareWallet(provider: string, username: string) {
+    return this.request("GET", "/token-launch/fee-share/wallet/v2", { provider, username });
+  }
+
+  async getFeeShareWalletBulk(items: { username: string; provider: string }[]) {
+    return this.request("POST", "/token-launch/fee-share/wallet/v2/bulk", undefined, { items });
+  }
+
+  // ─── All Pools ─────────────────────────────────────────────
+  async getAllPools(onlyMigrated = false): Promise<{ tokenMint: string; dbcPoolKey: string; dbcConfigKey: string; dammV2PoolKey: string | null }[]> {
+    const params: Record<string, string> = {};
+    if (onlyMigrated) params.onlyMigrated = "true";
+    return this.request("GET", "/solana/bags/pools", params);
+  }
+
+  async getPoolByTokenMint(tokenMint: string) {
+    return this.request("GET", "/solana/bags/pools/token-mint", { tokenMint });
+  }
+
+  // ─── Partner ───────────────────────────────────────────────
+  async getPartnerStats(partner: string): Promise<{ claimedFees: string; unclaimedFees: string }> {
+    return this.request("GET", "/fee-share/partner-config/stats", { partner });
+  }
+
+  // ─── DexScreener ──────────────────────────────────────────
+  async checkDexScreenerAvailability(tokenAddress: string): Promise<{ available: boolean }> {
+    return this.request("GET", "/solana/dexscreener/order-availability", { tokenAddress });
   }
 }
 
