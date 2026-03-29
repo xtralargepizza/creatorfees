@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ToolNav from "../ToolNav";
 
 interface QuoteResult {
@@ -20,6 +20,12 @@ export default function QuotePage() {
   const [quote, setQuote] = useState<QuoteResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const el = document.querySelector('[data-video-bg]');
+    if (el) el.classList.add('video-blur');
+    return () => { if (el) el.classList.remove('video-blur'); };
+  }, []);
 
   const fetchQuote = async () => {
     const trimmed = mint.trim();
@@ -55,13 +61,16 @@ export default function QuotePage() {
     <>
       <ToolNav />
       <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-[28px] md:text-[36px] font-bold tracking-tighter text-[var(--text)] mt-4 mb-1">
-        Price <span className="text-[var(--green)]">Check</span>
-      </h1>
-      <p className="text-[13px] text-[var(--text-2)] mb-6">Get a trade quote for any Bags token</p>
+      <div className={!quote ? 'flex flex-col items-center justify-center min-h-[60vh]' : ''}>
+        <div className="text-center mb-6">
+          <h1 className="text-[28px] md:text-[36px] font-bold tracking-tighter text-[var(--text)] mt-4 mb-1">
+            Price <span className="text-[var(--green)]">Check</span>
+          </h1>
+          <p className="text-[13px] text-[var(--text-2)]">Get a trade quote for any Bags token</p>
+        </div>
 
-      {/* Form */}
-      <div className="bg-[var(--card)] border border-[var(--border)] p-5 mb-4">
+        {/* Form */}
+        <div className="bg-[var(--card)] border border-[var(--border)] p-5 mb-4 w-full">
         <label className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--text-3)] mb-1.5">Token Mint</label>
         <input
           type="text"
@@ -87,7 +96,8 @@ export default function QuotePage() {
         </div>
       </div>
 
-      {error && <p className="text-[12px] font-bold text-[var(--error)] mb-4">{error}</p>}
+        {error && <p className="text-[12px] font-bold text-[var(--error)] mb-4">{error}</p>}
+      </div>
 
       {/* Results */}
       {quote && (

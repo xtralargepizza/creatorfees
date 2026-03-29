@@ -6,9 +6,11 @@ import { useTheme } from "../ThemeProvider";
 import ToolNav from "../ToolNav";
 
 interface ClaimablePosition {
-  baseMint: string;
-  totalClaimableLamportsUserShare: number;
-  migrated: boolean;
+  baseMint?: string;
+  totalClaimableLamportsUserShare?: number | string;
+  isMigrated?: boolean;
+  claimableDisplayAmount?: string;
+  [key: string]: unknown;
 }
 
 interface ClaimableData {
@@ -57,7 +59,16 @@ export default function ClaimPage() {
         setError(json.error || "Failed to load claimable data");
         return;
       }
-      setData(json.data);
+      // API returns raw array — transform it
+      const raw: ClaimablePosition[] = Array.isArray(json.data) ? json.data : (json.data?.positions || []);
+      const positions = raw.map(p => ({
+        ...p,
+        baseMint: p.baseMint || "Unknown",
+        totalClaimableLamportsUserShare: Number(p.totalClaimableLamportsUserShare || 0),
+        isMigrated: p.isMigrated || false,
+      }));
+      const totalUnclaimedLamports = positions.reduce((s, p) => s + Number(p.totalClaimableLamportsUserShare || 0), 0);
+      setData({ positions, totalUnclaimedLamports });
     } catch {
       setError("Network error");
     } finally {
@@ -183,7 +194,7 @@ export default function ClaimPage() {
           ) : (
             <div className="space-y-3">
               {data.positions
-                .sort((a, b) => b.totalClaimableLamportsUserShare - a.totalClaimableLamportsUserShare)
+                .sort((a, b) => Number(b.totalClaimableLamportsUserShare || 0) - Number(a.totalClaimableLamportsUserShare || 0))
                 .map((pos) => (
                   <div
                     key={pos.baseMint}
@@ -193,15 +204,15 @@ export default function ClaimPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-[13px] font-mono font-bold text-[var(--text)]">
-                          {truncMint(pos.baseMint)}
+                          {truncMint(pos.baseMint || "")}
                         </p>
-                        <span className={`text-[9px] font-bold uppercase tracking-[0.08em] px-1.5 py-0.5 ${pos.migrated ? "bg-[var(--green-10)] text-[var(--green)]" : "bg-[var(--border)] text-[var(--text-3)]"}`}>
-                          {pos.migrated ? "Migrated" : "Not Migrated"}
+                        <span className={`text-[9px] font-bold uppercase tracking-[0.08em] px-1.5 py-0.5 ${pos.isMigrated ? "bg-[var(--green-10)] text-[var(--green)]" : "bg-[var(--border)] text-[var(--text-3)]"}`}>
+                          {pos.isMigrated ? "Migrated" : "Not Migrated"}
                         </span>
                       </div>
                       <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--text-3)]">Claimable</p>
                       <p className="text-[20px] md:text-[24px] font-bold text-[var(--green)] leading-none mt-0.5">
-                        {pos.totalClaimableLamportsUserShare > 0 ? fmtSol(pos.totalClaimableLamportsUserShare) : "0"}
+                        {Number(pos.totalClaimableLamportsUserShare || 0) > 0 ? fmtSol(Number(pos.totalClaimableLamportsUserShare)) : "0"}
                         <span className="text-[11px] font-bold text-[var(--text-3)] ml-1.5">SOL</span>
                       </p>
                     </div>

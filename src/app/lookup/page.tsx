@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import ToolNav from "../ToolNav";
 
 interface SocialResult {
@@ -37,6 +37,12 @@ export default function LookupPage() {
   const [error, setError] = useState("");
   const [social, setSocial] = useState<SocialResult | null>(null);
   const [walletData, setWalletData] = useState<WalletData | null>(null);
+
+  useEffect(() => {
+    const el = document.querySelector('[data-video-bg]');
+    if (el) el.classList.add('video-blur');
+    return () => { if (el) el.classList.remove('video-blur'); };
+  }, []);
 
   const handleLookup = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,52 +84,54 @@ export default function LookupPage() {
   return (
     <>
       <ToolNav />
-      <section className="px-4 sm:px-6 md:px-8 lg:px-10 pt-6 pb-16 mx-auto max-w-3xl">
-      {/* Title */}
-      <div className="mb-8">
-        <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-[var(--text-3)] mb-3">
-          Social Lookup
-        </h2>
-        <h1 className="text-[36px] md:text-[48px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
-          Who <span className="text-[var(--green)]">Earns?</span>
-        </h1>
-        <p className="mt-3 text-[14px] text-[var(--text-2)] leading-relaxed max-w-lg">
-          Enter a social handle to see which Bags tokens they earn creator fees from.
-        </p>
-      </div>
-
-      {/* Search form */}
-      <form onSubmit={handleLookup} className="mb-8">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <select
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
-            className="h-12 bg-[var(--card)] border-2 border-[var(--border)] px-4 text-[13px] font-bold text-[var(--text)] outline-none cursor-pointer focus:border-[var(--green)] sm:w-40 appearance-none"
-            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239B9B9F' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center" }}
-          >
-            {PROVIDERS.map(p => (
-              <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
-            ))}
-          </select>
-          <div className="flex flex-1 h-12">
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => { setUsername(e.target.value); setError(""); }}
-              placeholder="Username..."
-              className="flex-1 bg-[var(--card)] border-2 border-r-0 border-[var(--border)] px-4 text-[14px] text-[var(--text)] placeholder:text-[var(--text-3)] outline-none focus:border-[var(--green)]"
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-[var(--green)] text-white font-bold px-6 text-[12px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)] disabled:opacity-50 shrink-0 transition-colors"
-            >
-              {loading ? "..." : "Look Up"}
-            </button>
-          </div>
+      <section className="max-w-2xl mx-auto px-4 pt-6 pb-16">
+      <div className={!social ? 'flex flex-col items-center justify-center min-h-[60vh] text-center' : ''}>
+        {/* Title */}
+        <div className="mb-8">
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-[var(--text-3)] mb-3">
+            Social Lookup
+          </h2>
+          <h1 className="text-[36px] md:text-[48px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
+            Who <span className="text-[var(--green)]">Earns?</span>
+          </h1>
+          <p className="mt-3 text-[14px] text-[var(--text-2)] leading-relaxed max-w-lg mx-auto">
+            Enter a social handle to see which Bags tokens they earn creator fees from.
+          </p>
         </div>
-        {error && <p className="mt-2 text-[12px] font-bold text-[var(--error)]">{error}</p>}
-      </form>
+
+        {/* Search form */}
+        <form onSubmit={handleLookup} className="mb-8 w-full">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <select
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+              className="h-12 bg-[var(--card)] border-2 border-[var(--border)] px-4 text-[13px] font-bold text-[var(--text)] outline-none cursor-pointer focus:border-[var(--green)] sm:w-40 appearance-none"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239B9B9F' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center" }}
+            >
+              {PROVIDERS.map(p => (
+                <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+              ))}
+            </select>
+            <div className="flex flex-1 h-12">
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => { setUsername(e.target.value); setError(""); }}
+                placeholder="Username..."
+                className="flex-1 bg-[var(--card)] border-2 border-r-0 border-[var(--border)] px-4 text-[14px] text-[var(--text)] placeholder:text-[var(--text-3)] outline-none focus:border-[var(--green)]"
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-[var(--green)] text-white font-bold px-6 text-[12px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)] disabled:opacity-50 shrink-0 transition-colors"
+              >
+                {loading ? "..." : "Look Up"}
+              </button>
+            </div>
+          </div>
+          {error && <p className="mt-2 text-[12px] font-bold text-[var(--error)]">{error}</p>}
+        </form>
+      </div>
 
       {/* Results */}
       {social && (

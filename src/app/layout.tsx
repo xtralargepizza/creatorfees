@@ -39,24 +39,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <UnicornBg />
           <main className="flex-1 w-full relative z-10">{children}</main>
-          <footer className="mt-auto w-full border-t border-[var(--border)] py-6 relative z-10">
+          <footer className="mt-auto w-full border-t border-[var(--border)] py-4 relative z-10">
             <div className="mx-auto max-w-4xl px-4">
-              {/* Tool links */}
-              <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mb-4">
-                {TOOL_LINKS.map(t => (
-                  <a key={t.href} href={t.href} className="text-[11px] font-bold text-[var(--green)] hover:underline uppercase tracking-[0.04em]">
-                    {t.label}
-                  </a>
-                ))}
-              </div>
-              {/* Bottom row */}
-              <div className="flex items-center justify-between text-[10px] text-[var(--text-3)]">
-                <a href="https://creatorfees.xyz" className="font-semibold hover:text-[var(--green)]">CreatorFees.xyz</a>
-                <span>
+              {/* Single structured row */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                {/* Left: brand */}
+                <a href="https://creatorfees.xyz" className="text-[11px] font-bold text-[var(--text)] hover:text-[var(--green)]">CreatorFees.xyz</a>
+                {/* Center: tool links */}
+                <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+                  {TOOL_LINKS.map(t => (
+                    <a key={t.href} href={t.href} className="text-[10px] font-semibold text-[var(--green)] hover:underline">
+                      {t.label}
+                    </a>
+                  ))}
+                </div>
+                {/* Right: external links */}
+                <div className="flex items-center gap-2 text-[10px] text-[var(--text-3)]">
                   <a href="https://bags.fm/?ref=crisnewtonx" target="_blank" className="font-semibold hover:text-[var(--green)]">Bags.fm</a>
-                  {" · "}
+                  <span>·</span>
                   <a href="https://x.com/crisnewtonx" target="_blank" className="font-semibold hover:text-[var(--green)]">@crisnewtonx</a>
-                </span>
+                </div>
               </div>
             </div>
           </footer>

@@ -20,10 +20,10 @@ export default function ToolNav() {
     <div className="sticky top-0 z-50 bg-[var(--bg)]/90 backdrop-blur-xl border-b border-[var(--border)]">
       <div className="mx-auto max-w-4xl px-4">
         {/* Top bar: logo + theme */}
-        <div className="flex items-center justify-between py-2">
+        <div className="flex items-center justify-between py-2 border-b border-[var(--border)]/50">
           <a href="/" className="flex items-center gap-2">
             <img src="/logo.svg" alt="" className="h-5" />
-            <span className="text-[13px] font-bold text-[var(--text)]">CreatorFees</span>
+            <span className="text-[14px] font-bold tracking-tight text-[var(--text)]">CreatorFees</span>
           </a>
           <div className="flex items-center gap-2">
             <button onClick={toggleTheme}
@@ -35,7 +35,7 @@ export default function ToolNav() {
               )}
             </button>
             <a href="https://bags.fm/?ref=crisnewtonx" target="_blank" rel="noopener noreferrer"
-              className="bg-[var(--green)] text-white font-bold py-1 px-3 text-[10px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)]">
+              className="bg-[var(--green)] text-white font-bold py-1.5 px-4 text-[11px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)]">
               Bags
             </a>
           </div>
@@ -46,10 +46,10 @@ export default function ToolNav() {
             const active = path === item.href;
             return (
               <a key={item.href} href={item.href}
-                className={`shrink-0 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.04em] border-b-2 transition-colors ${
+                className={`shrink-0 px-3 py-2 text-[12px] tracking-[0.04em] border-b-2 transition-colors ${
                   active
-                    ? "border-[var(--green)] text-[var(--green)]"
-                    : "border-transparent text-[var(--text-3)] hover:text-[var(--text)]"
+                    ? "font-bold border-[var(--green)] text-[var(--green)]"
+                    : "font-semibold border-transparent text-[var(--text-3)] hover:text-[var(--text)]"
                 }`}>
                 {item.label}
               </a>

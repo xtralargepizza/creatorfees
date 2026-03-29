@@ -56,7 +56,15 @@ export default function WalletPage() {
         setError(json.error || "Failed to load wallet data");
         return;
       }
-      setData(json.data);
+      // Transform API response { wallet, tokenMints: [{ mint, lifetimeFees }] }
+      const raw = json.data;
+      const mints = raw.tokenMints || raw.tokens || [];
+      const tokens = mints.map((t: { mint: string; lifetimeFees?: string | null; lifetimeFeesLamports?: number }) => ({
+        mint: t.mint,
+        lifetimeFeesLamports: t.lifetimeFeesLamports || parseInt(t.lifetimeFees || "0") || 0,
+      }));
+      const totalFeesLamports = tokens.reduce((s: number, t: { lifetimeFeesLamports: number }) => s + t.lifetimeFeesLamports, 0);
+      setData({ tokens, totalFeesLamports });
     } catch {
       setError("Network error");
     } finally {
