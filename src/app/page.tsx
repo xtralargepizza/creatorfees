@@ -1,296 +1,316 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-interface TokenLaunch {
-  name: string;
-  symbol: string;
-  description: string;
-  image: string;
-  tokenMint: string;
-  status: string;
-  twitter: string | null;
-  website: string | null;
+interface Creator {
+  username: string; pfp: string; provider: string; twitterUsername: string;
+  royaltyBps: number; isCreator: boolean; isAdmin: boolean; wallet: string;
+}
+interface ClaimStat { wallet: string; tokenMint: string; totalClaimed: string; }
+interface ClaimEvent { wallet: string; isCreator: boolean; amount: string; signature: string; timestamp: number; }
+interface TokenData {
+  tokenMint: string; lifetimeFees: string | null; creators: Creator[];
+  claimStats: ClaimStat[]; claimEvents: { events: ClaimEvent[] } | ClaimEvent[];
+}
+interface Toast { id: number; message: string; amount: string; exiting?: boolean; }
+
+function getEvents(raw: TokenData["claimEvents"]): ClaimEvent[] {
+  if (Array.isArray(raw)) return raw;
+  if (raw && typeof raw === "object" && "events" in raw) return raw.events;
+  return [];
+}
+function fmtSol(lam: number): string {
+  const sol = lam / 1e9;
+  if (sol >= 1) return sol.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+  if (sol >= 0.001) return sol.toFixed(6);
+  return sol.toFixed(9);
+}
+function ago(ts: number): string {
+  const d = Math.floor(Date.now() / 1000) - ts;
+  if (d < 60) return `${d}s ago`;
+  if (d < 3600) return `${Math.floor(d / 60)}m ago`;
+  if (d < 86400) return `${Math.floor(d / 3600)}h ago`;
+  return `${Math.floor(d / 86400)}d ago`;
 }
 
-export default function Dashboard() {
+export default function Home() {
   const [mint, setMint] = useState("");
+  const [data, setData] = useState<TokenData | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [tokens, setTokens] = useState<TokenLaunch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const prevEventsRef = useRef<string[]>([]);
+  const toastId = useRef(0);
+  const pollRef = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchFeed = useCallback(async () => {
-    try {
-      const res = await fetch("/api/feed");
-      const json = await res.json();
-      if (json.success) setTokens(json.data);
-    } catch { /* silent */ }
-    finally { setLoading(false); }
+  const addToast = useCallback((message: string, amount: string) => {
+    const id = ++toastId.current;
+    setToasts(prev => [...prev.slice(-4), { id, message, amount }]);
+    setTimeout(() => {
+      setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
+      setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 300);
+    }, 5000);
   }, []);
 
+  const fetchToken = useCallback(async (address: string, isPolling = false) => {
+    if (!isPolling) setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/token/${address}`);
+      const json = await res.json();
+      if (!json.success) { setError(json.error || "Failed to load"); return; }
+      setData(json.data);
+
+      // Check for new claim events → toast
+      const events = getEvents(json.data.claimEvents);
+      const sigs = events.map((e: ClaimEvent) => e.signature);
+      if (prevEventsRef.current.length > 0) {
+        const newEvents = events.filter((e: ClaimEvent) => !prevEventsRef.current.includes(e.signature));
+        newEvents.forEach((e: ClaimEvent) => {
+          const who = e.isCreator ? "Creator" : e.wallet.slice(0, 6) + "...";
+          addToast(`${who} claimed fees`, `+${fmtSol(parseInt(e.amount))} SOL`);
+        });
+      }
+      prevEventsRef.current = sigs;
+    } catch {
+      if (!isPolling) setError("Network error");
+    } finally {
+      if (!isPolling) setLoading(false);
+    }
+  }, [addToast]);
+
+  // Poll for new events every 15s when we have a token loaded
   useEffect(() => {
-    fetchFeed();
-    const iv = setInterval(fetchFeed, 30000);
-    return () => clearInterval(iv);
-  }, [fetchFeed]);
+    if (!data?.tokenMint) return;
+    pollRef.current = setInterval(() => fetchToken(data.tokenMint, true), 15000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [data?.tokenMint, fetchToken]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = mint.trim();
-    if (!trimmed) { setError("Enter a token mint address"); return; }
-    if (trimmed.length < 32 || trimmed.length > 44) { setError("Invalid Solana address"); return; }
-    router.push(`/token/${trimmed}`);
+    if (!trimmed || trimmed.length < 32 || trimmed.length > 44) {
+      setError("Enter a valid Solana token mint address");
+      return;
+    }
+    prevEventsRef.current = [];
+    fetchToken(trimmed);
   };
 
-  const totalTokens = tokens.length;
-  const graduated = tokens.filter(t => t.status === "MIGRATED").length;
-  const bondingCurve = tokens.filter(t => t.status === "PRE_GRAD").length;
-
-  // Create faux bar chart from token statuses
-  const bars = tokens.slice(0, 14).map((t, i) => {
-    const h = 20 + Math.random() * 75;
-    const isGreen = t.status === "MIGRATED" || i % 3 === 0;
-    return { height: h, green: isGreen };
-  });
+  const feesLam = data?.lifetimeFees ? parseInt(data.lifetimeFees) : 0;
+  const events = data ? getEvents(data.claimEvents) : [];
+  const totalClaimed = data?.claimStats.reduce((s, c) => s + parseInt(c.totalClaimed || "0"), 0) || 0;
+  const unclaimed = feesLam - totalClaimed;
+  const claimPct = feesLam > 0 ? (totalClaimed / feesLam) * 100 : 0;
+  const creator = data?.creators.find(c => c.isCreator) || data?.creators[0];
 
   return (
-    <section className="px-6 md:px-8 pt-4 pb-16">
-      {/* Hero */}
-      <div className="mb-12 md:mb-16">
-        <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-variant)] mb-4">
-          Platform Overview
-        </h2>
-        <h1 className="text-[48px] md:text-[72px] font-bold leading-[1.05] tracking-tighter text-[var(--text)] max-w-4xl">
-          Fee Revenue{" "}
-          <span className="text-[var(--green)]">Dashboard</span>
-        </h1>
-        <p className="mt-4 md:mt-6 text-[13px] text-[var(--text-variant)] font-medium max-w-xl leading-relaxed">
-          Real-time fee analytics for Bags.fm token creators. Track lifetime fees,
-          claim history, and holder analytics. Paste a token mint to analyze.
-        </p>
-      </div>
-
-      {/* Search Bar */}
-      <form onSubmit={handleSearch} className="mb-12 md:mb-16 max-w-2xl">
-        <div className="flex border-2 border-[var(--text)]/10 bg-[var(--surface-lowest)] focus-within:border-[var(--green)] transition-colors">
-          <span className="material-symbols-outlined flex items-center px-4 text-[var(--text-dim)]">
-            search
-          </span>
-          <input
-            type="text"
-            value={mint}
-            onChange={(e) => { setMint(e.target.value); setError(""); }}
-            placeholder="PASTE TOKEN MINT ADDRESS..."
-            className="flex-1 bg-transparent py-3.5 pr-4 text-[12px] font-bold uppercase tracking-[0.05em] text-[var(--text)] placeholder:text-[var(--text-dim)] outline-none font-mono"
-          />
-          <button type="submit" className="bg-[var(--green)] text-[var(--text)] font-bold px-6 text-[11px] tracking-[0.1em] uppercase hover:brightness-110 active:scale-95 transition-all">
-            Analyze
-          </button>
-        </div>
-        {error && <p className="mt-2 text-[10px] font-bold text-[var(--error)]">{error}</p>}
-      </form>
-
-      {/* Bento Grid Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-1 mb-12 md:mb-16">
-        {/* Live Tokens */}
-        <div className="bg-[var(--surface-low)] p-6 md:p-8 flex flex-col justify-between">
-          <div>
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">
-              Live Tokens
-            </h3>
-            <div className="text-4xl font-bold text-[var(--text)]">
-              {loading ? "..." : totalTokens}
+    <>
+      {/* Toast Container */}
+      <div className="fixed top-16 right-4 z-50 space-y-2 w-72">
+        {toasts.map(t => (
+          <div key={t.id} className={`${t.exiting ? "toast-exit" : "toast-enter"} flex items-center gap-3 bg-[var(--white)] border-l-4 border-[var(--green)] p-3 shadow-lg`}>
+            <div className="w-8 h-8 bg-[var(--green-10)] flex items-center justify-center shrink-0">
+              <span className="text-[var(--green)] text-[14px]">$</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-[var(--text)] truncate">{t.message}</p>
+              <p className="text-[12px] font-bold text-[var(--green)]">{t.amount}</p>
             </div>
           </div>
-          <div className="mt-6">
-            <a
-              href="/feed"
-              className="block w-full bg-[var(--green)] text-[var(--text)] font-bold py-3.5 text-center text-[11px] tracking-[0.1em] uppercase hover:brightness-110 transition-all active:scale-95"
+        ))}
+      </div>
+
+      <div className="flex flex-col items-center">
+        {/* Hero */}
+        <div className="mt-10 mb-8 text-center">
+          <img src="/bags-icon.png" alt="Bags" className="mx-auto h-14 w-14 mb-5" />
+          <h1 className="text-[40px] md:text-[56px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
+            Fee Revenue <span className="text-[var(--green)]">Dashboard</span>
+          </h1>
+          <p className="mt-3 text-[13px] text-[var(--text-variant)] max-w-md mx-auto leading-relaxed">
+            Paste a token mint address to see lifetime fees, claim history, and creator analytics instantly.
+          </p>
+        </div>
+
+        {/* Search */}
+        <form onSubmit={handleSearch} className="w-full max-w-2xl mb-10">
+          <div className="flex border-2 border-[var(--surface-highest)] bg-[var(--white)] focus-within:border-[var(--green)] transition-colors">
+            <input
+              type="text"
+              value={mint}
+              onChange={(e) => { setMint(e.target.value); setError(""); }}
+              placeholder="Paste token mint address..."
+              className="flex-1 bg-transparent px-4 py-3.5 text-[13px] text-[var(--text)] placeholder:text-[var(--text-dim)] outline-none font-mono"
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-[var(--green)] text-white font-bold px-6 text-[11px] uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] active:scale-95 transition-all disabled:opacity-50"
             >
-              View Feed
-            </a>
+              {loading ? "..." : "Check Fees"}
+            </button>
           </div>
-        </div>
+          {error && <p className="mt-2 text-[11px] font-bold text-[var(--error)]">{error}</p>}
+        </form>
 
-        {/* Graduated */}
-        <div className="bg-[var(--surface)] p-6 md:p-8 flex flex-col justify-between">
-          <div>
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">
-              Graduated
-            </h3>
-            <div className="text-4xl font-bold text-[var(--text)]">
-              {loading ? "..." : graduated}
-            </div>
-          </div>
-          <div className="mt-6 flex items-center gap-2">
-            <span className="text-[var(--green)] text-[11px] font-bold">
-              {totalTokens > 0 ? ((graduated / totalTokens) * 100).toFixed(0) : 0}%
-            </span>
-            <span className="text-[var(--text-variant)] text-[11px] uppercase tracking-[0.1em]">
-              of total launched
-            </span>
-          </div>
-        </div>
-
-        {/* Bonding Curve */}
-        <div className="bg-[var(--surface-high)] p-6 md:p-8 flex flex-col justify-between">
-          <div>
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">
-              On Bonding Curve
-            </h3>
-            <div className="text-4xl font-bold text-[var(--text)]">
-              {loading ? "..." : bondingCurve}
+        {/* Results */}
+        {loading && (
+          <div className="w-full max-w-2xl space-y-3">
+            <div className="h-24 bg-[var(--surface-low)] animate-pulse" />
+            <div className="grid grid-cols-3 gap-1">
+              {[1,2,3].map(i => <div key={i} className="h-20 bg-[var(--surface-low)] animate-pulse" />)}
             </div>
           </div>
-          <div className="mt-6">
-            <div className="bags-progress-bar">
-              <div
-                className="bags-progress-fill"
-                style={{ width: totalTokens > 0 ? `${(bondingCurve / totalTokens) * 100}%` : "0%" }}
-              />
-            </div>
-            <div className="mt-2 text-[10px] uppercase font-bold tracking-[0.1em] text-[var(--text-variant)]">
-              Active bonding curves
-            </div>
-          </div>
-        </div>
-      </div>
+        )}
 
-      {/* Revenue Chart (Visual) */}
-      <div className="mb-12 md:mb-16">
-        <div className="flex justify-between items-end mb-6">
-          <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-variant)]">
-            Launch Activity
-          </h2>
-          <span className="text-[10px] font-bold bg-[var(--surface-highest)] px-2 py-1 uppercase tracking-[0.1em]">
-            Current Feed
-          </span>
-        </div>
-        <div className="bg-[var(--surface-low)] p-1 h-48 md:h-72 relative flex items-end gap-1 overflow-hidden">
-          {loading ? (
-            <div className="w-full h-full flex items-center justify-center text-[var(--text-dim)] text-[11px] font-bold uppercase tracking-[0.1em]">
-              Loading...
-            </div>
-          ) : bars.length > 0 ? (
-            bars.map((bar, i) => (
-              <div
-                key={i}
-                className={`w-full transition-all duration-500 ${bar.green ? "bg-[var(--green)]" : "bg-[var(--surface-highest)]"}`}
-                style={{ height: `${bar.height}%` }}
-              />
-            ))
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[var(--text-dim)]">
-              No data
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Recent Launches Table */}
-      <div>
-        <h2 className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--text-variant)] mb-6">
-          Recent Launches
-        </h2>
-
-        {loading ? (
-          <div className="space-y-1">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-16 bg-[var(--surface-low)] animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <>
-            {/* Table Header */}
-            <div className="hidden md:grid grid-cols-[1fr_1fr_120px_120px_100px] gap-4 bg-[var(--surface-low)] py-3 px-6">
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Token</span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Description</span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Status</span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Socials</span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Mint</span>
+        {data && !loading && (
+          <div className="w-full max-w-2xl animate-slide-up">
+            {/* Big Fee Display */}
+            <div className="bg-[var(--white)] border border-[var(--surface)] p-6 mb-1 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {creator?.pfp && <img src={creator.pfp} alt="" className="w-10 h-10" />}
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)]">Lifetime Fees</p>
+                  <p className="text-[32px] font-bold tracking-tight text-[var(--text)]">
+                    {feesLam > 0 ? fmtSol(feesLam) : "0"}{" "}
+                    <span className="text-[var(--green)] text-[24px]">SOL</span>
+                  </p>
+                </div>
+              </div>
+              <a
+                href={`https://bags.fm/${data.tokenMint}?ref=crisnewtonx`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 bg-[var(--green)] text-white font-bold py-2 px-4 text-[10px] uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] transition-colors"
+              >
+                Bags.fm
+              </a>
             </div>
 
-            <div className="space-y-0">
-              {tokens.slice(0, 8).map((token, i) => (
-                <a
-                  key={token.tokenMint}
-                  href={`/token/${token.tokenMint}`}
-                  className={`block ${i % 2 === 0 ? "bg-[var(--surface-low)]/50" : ""} hover:bg-[var(--surface)] transition-colors`}
-                >
-                  {/* Desktop row */}
-                  <div className="hidden md:grid grid-cols-[1fr_1fr_120px_120px_100px] gap-4 items-center py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      {token.image ? (
-                        <img src={token.image} alt="" className="w-8 h-8 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                      ) : (
-                        <div className="w-8 h-8 bg-[var(--green)]/10 flex items-center justify-center text-[12px] font-bold text-[var(--green)]">
-                          {token.symbol?.charAt(0) || "?"}
+            {/* Stats Row */}
+            <div className="grid grid-cols-3 gap-[1px] bg-[var(--surface)] mb-4">
+              <Stat label="Claimed" value={totalClaimed > 0 ? `${fmtSol(totalClaimed)}` : "0"} unit="SOL" />
+              <Stat label="Unclaimed" value={unclaimed > 0 ? `${fmtSol(unclaimed)}` : "0"} unit="SOL" warn={unclaimed > 0} />
+              <Stat label="Events" value={String(events.length)} sub={events.length > 0 ? ago(events[0].timestamp) : "—"} />
+            </div>
+
+            {/* Progress */}
+            {feesLam > 0 && (
+              <div className="bg-[var(--white)] border border-[var(--surface)] p-4 mb-4">
+                <div className="flex justify-between mb-2 text-[10px] font-bold uppercase tracking-[0.08em]">
+                  <span className="text-[var(--text-variant)]">Claim Progress</span>
+                  <span className="text-[var(--text)]">{claimPct.toFixed(1)}%</span>
+                </div>
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: `${Math.min(100, claimPct)}%` }} />
+                </div>
+              </div>
+            )}
+
+            {/* Creators */}
+            {data.creators.length > 0 && (
+              <div className="mb-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">Fee Share</p>
+                <div className="space-y-[1px]">
+                  {data.creators.map((c, i) => (
+                    <div key={i} className="bg-[var(--white)] border border-[var(--surface)] p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {c.pfp ? <img src={c.pfp} alt="" className="w-8 h-8" /> : (
+                          <div className="w-8 h-8 bg-[var(--green-10)] flex items-center justify-center text-[12px] font-bold text-[var(--green)]">
+                            {c.username.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <a href={`https://x.com/${c.twitterUsername}`} target="_blank" className="text-[12px] font-bold text-[var(--link)] hover:text-[var(--green)]">
+                              @{c.twitterUsername || c.username}
+                            </a>
+                            {c.isCreator && <span className="px-1.5 py-0.5 text-[8px] font-bold uppercase bg-[var(--green-10)] text-[#00A020]">Creator</span>}
+                          </div>
+                          <p className="text-[10px] text-[var(--text-dim)]">{(c.royaltyBps / 100).toFixed(0)}% share</p>
                         </div>
-                      )}
-                      <div>
-                        <span className="text-[12px] font-bold text-[var(--text)]">{token.name}</span>
-                        <span className="ml-2 text-[10px] font-medium text-[var(--text-dim)]">${token.symbol}</span>
                       </div>
+                      <span className="font-mono text-[10px] text-[var(--text-dim)]">{c.wallet.slice(0, 6)}...{c.wallet.slice(-4)}</span>
                     </div>
-                    <span className="text-[11px] text-[var(--text-variant)] truncate">{token.description?.slice(0, 60)}</span>
-                    <StatusBadge status={token.status} />
-                    <div className="flex gap-2 text-[10px] font-bold">
-                      {token.twitter && <span className="text-[var(--link)]">Twitter</span>}
-                      {token.website && <span className="text-[var(--green)]">Web</span>}
-                      {!token.twitter && !token.website && <span className="text-[var(--text-dim)]">—</span>}
-                    </div>
-                    <span className="font-mono text-[10px] text-[var(--text-dim)]">
-                      {token.tokenMint.slice(0, 4)}...{token.tokenMint.slice(-4)}
-                    </span>
-                  </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                  {/* Mobile row */}
-                  <div className="md:hidden flex items-center justify-between p-4">
-                    <div className="flex items-center gap-3">
-                      {token.image ? (
-                        <img src={token.image} alt="" className="w-10 h-10 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                      ) : (
-                        <div className="w-10 h-10 bg-[var(--green)]/10 flex items-center justify-center text-[14px] font-bold text-[var(--green)]">
-                          {token.symbol?.charAt(0) || "?"}
-                        </div>
-                      )}
+            {/* Claim History */}
+            {events.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-2">Claim History</p>
+                <div className="space-y-[1px]">
+                  {events.map((ev, i) => (
+                    <a
+                      key={i}
+                      href={`https://solscan.io/tx/${ev.signature}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between bg-[var(--white)] border border-[var(--surface)] p-3 hover:bg-[var(--surface-low)] transition-colors"
+                    >
                       <div>
-                        <p className="text-[12px] font-bold text-[var(--text)] uppercase">{token.name}</p>
-                        <p className="text-[10px] text-[var(--text-variant)] uppercase">${token.symbol}</p>
+                        <p className="text-[11px] font-bold text-[var(--text)]">
+                          {ev.wallet.slice(0, 6)}...{ev.wallet.slice(-4)}
+                          {ev.isCreator && <span className="ml-1.5 text-[9px] font-bold text-[var(--green)]">CREATOR</span>}
+                        </p>
+                        <p className="text-[10px] text-[var(--text-dim)]">{ago(ev.timestamp)}</p>
                       </div>
-                    </div>
-                    <StatusBadge status={token.status} />
-                  </div>
-                </a>
-              ))}
+                      <span className="text-[12px] font-bold text-[var(--green)]">+{fmtSol(parseInt(ev.amount))} SOL</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Empty */}
+            {feesLam === 0 && data.creators.length === 0 && events.length === 0 && (
+              <div className="bg-[var(--surface-low)] p-8 text-center">
+                <p className="text-[12px] font-bold text-[var(--text-variant)]">No fee data found</p>
+                <p className="text-[11px] text-[var(--text-dim)] mt-1">This token may be new or not a Bags token.</p>
+              </div>
+            )}
+
+            {/* Mint address */}
+            <div className="mt-4 text-center">
+              <p className="font-mono text-[10px] text-[var(--text-dim)] break-all">{data.tokenMint}</p>
             </div>
+          </div>
+        )}
 
-            <a
-              href="/feed"
-              className="block w-full mt-1 py-4 border-2 border-[var(--text)]/10 text-center text-[10px] font-bold uppercase tracking-[0.1em] hover:bg-[var(--surface)] transition-colors"
-            >
-              View All Launches
-            </a>
-          </>
+        {/* Empty state before search */}
+        {!data && !loading && !error && (
+          <div className="w-full max-w-2xl grid grid-cols-3 gap-[1px] bg-[var(--surface)]">
+            <InfoCard label="Data Source" value="Bags API" sub="Real-time on-chain" />
+            <InfoCard label="Analytics" value="Fee Tracking" sub="Lifetime fees & claims" />
+            <InfoCard label="Notifications" value="Live" sub="Toast alerts on new claims" green />
+          </div>
         )}
       </div>
-    </section>
+    </>
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; cls: string }> = {
-    PRE_LAUNCH: { label: "PRE-LAUNCH", cls: "bg-purple-500/10 text-purple-700" },
-    PRE_GRAD: { label: "BONDING", cls: "bg-yellow-500/10 text-yellow-700" },
-    MIGRATING: { label: "MIGRATING", cls: "bg-blue-500/10 text-blue-700" },
-    MIGRATED: { label: "GRADUATED", cls: "bg-[var(--green)]/10 text-[#00A020]" },
-  };
-  const s = map[status] || { label: status, cls: "bg-gray-500/10 text-gray-600" };
+function Stat({ label, value, unit, sub, warn }: { label: string; value: string; unit?: string; sub?: string; warn?: boolean }) {
   return (
-    <span className={`inline-flex px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] ${s.cls}`}>
-      {s.label}
-    </span>
+    <div className="bg-[var(--white)] p-4">
+      <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--text-dim)]">{label}</p>
+      <p className={`text-[16px] font-bold mt-0.5 ${warn ? "text-[#B08C00]" : "text-[var(--text)]"}`}>
+        {value} {unit && <span className="text-[12px] text-[var(--text-variant)]">{unit}</span>}
+      </p>
+      {sub && <p className="text-[9px] text-[var(--text-dim)] mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function InfoCard({ label, value, sub, green }: { label: string; value: string; sub: string; green?: boolean }) {
+  return (
+    <div className="bg-[var(--white)] p-5">
+      <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--text-dim)]">{label}</p>
+      <p className={`text-[14px] font-bold mt-1 ${green ? "text-[var(--green)]" : ""}`}>{value}</p>
+      <p className="text-[10px] text-[var(--text-dim)] mt-0.5">{sub}</p>
+    </div>
   );
 }

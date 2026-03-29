@@ -6,7 +6,6 @@
   src: url('/fonts/OpenRunde-Regular.woff2') format('woff2'),
        url('/fonts/OpenRunde-Regular.woff') format('woff');
   font-weight: 400;
-  font-style: normal;
   font-display: swap;
 }
 @font-face {
@@ -14,7 +13,6 @@
   src: url('/fonts/OpenRunde-Medium.woff2') format('woff2'),
        url('/fonts/OpenRunde-Medium.woff') format('woff');
   font-weight: 500;
-  font-style: normal;
   font-display: swap;
 }
 @font-face {
@@ -22,7 +20,6 @@
   src: url('/fonts/OpenRunde-Semibold.woff2') format('woff2'),
        url('/fonts/OpenRunde-Semibold.woff') format('woff');
   font-weight: 600;
-  font-style: normal;
   font-display: swap;
 }
 @font-face {
@@ -30,22 +27,19 @@
   src: url('/fonts/OpenRunde-Bold.woff2') format('woff2'),
        url('/fonts/OpenRunde-Bold.woff') format('woff');
   font-weight: 700;
-  font-style: normal;
   font-display: swap;
 }
 
-/* ─── Design Tokens ───────────────────────────────── */
 :root {
   --green: #00D62B;
   --green-hover: #00C025;
-  --green-10: rgba(0, 214, 43, 0.10);
-  --green-20: rgba(0, 214, 43, 0.20);
+  --green-10: rgba(0, 214, 43, 0.08);
   --bg: #F5F5EE;
   --surface-low: #F1F1EA;
   --surface: #E8E9E1;
   --surface-high: #E2E3DB;
   --surface-highest: #DCDED5;
-  --surface-lowest: #FFFFFF;
+  --white: #FFFFFF;
   --text: #0D0D0F;
   --text-variant: #5A5C57;
   --text-dim: #767772;
@@ -58,43 +52,34 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'OpenRunde', 'Plus Jakarta Sans', system-ui, sans-serif;
-  font-size: 11px;
-  line-height: 1.5;
+  font-family: 'OpenRunde', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-*, *::before, *::after {
-  border-radius: 0 !important;
-}
+*, *::before, *::after { border-radius: 0 !important; }
 
-/* ─── Scrollbar ───────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--surface-low); }
 ::-webkit-scrollbar-thumb { background: var(--green); }
 
-/* ─── Material Icons ──────────────────────────────── */
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
+/* Progress bar */
+.progress-bar { height: 10px; background: var(--surface-highest); overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--primary-dark)); }
 
-/* ─── Animations ──────────────────────────────────── */
+/* Toast animation */
+@keyframes toast-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes toast-out {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+.toast-enter { animation: toast-in 0.3s ease-out forwards; }
+.toast-exit { animation: toast-out 0.3s ease-in forwards; }
+
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-slide-up {
-  animation: slide-up 0.2s ease-out forwards;
-}
-
-/* ─── Progress Bar ────────────────────────────────── */
-.bags-progress-bar {
-  height: 12px;
-  background: var(--surface-highest);
-  position: relative;
-  overflow: hidden;
-}
-.bags-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--green) 0%, var(--primary-dark) 100%);
-}
+.animate-slide-up { animation: slide-up 0.2s ease-out forwards; }
