@@ -138,35 +138,43 @@ export default function Home() {
       </div>
 
       <div className="flex flex-col items-center px-4">
-        {/* Hero — centered vertically when no results */}
-        <div className={`flex flex-col items-center justify-center text-center w-full ${!data && !loading ? "min-h-[60vh]" : "mt-8 mb-6"}`}>
-          <img src="/logo.svg" alt="CreatorFees" className="mx-auto h-20 md:h-28 lg:h-32 mb-6" />
-          <p className="text-[14px] md:text-[16px] text-[var(--text-variant)] max-w-md mx-auto leading-relaxed mb-8">
-            Paste a Bags CA to see creator fees, claim history, and analytics instantly.
-          </p>
+        {/* Hero */}
+        <div className={`flex flex-col items-center justify-center text-center w-full ${!data && !loading ? "min-h-[65vh]" : "mt-6 mb-4"}`}>
+          <img src="/logo.svg" alt="CreatorFees" className={`mx-auto mb-5 ${!data && !loading ? "h-16 md:h-20" : "h-10"}`} />
+          {(!data && !loading) && (
+            <>
+              <h1 className="text-[42px] md:text-[56px] lg:text-[72px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
+                Creator Fee{" "}
+                <span className="text-[var(--green)]">Dashboard</span>
+              </h1>
+              <p className="mt-4 text-[14px] md:text-[16px] text-[var(--text-variant)] max-w-lg mx-auto leading-relaxed">
+                Track lifetime creator fees, claim history, and fee share analytics for any Bags.fm token.
+              </p>
+            </>
+          )}
 
-          {/* Search */}
-          <form onSubmit={handleSearch} className="w-full max-w-xl">
-            <div className="flex border-2 border-[var(--surface-highest)] bg-[var(--white)] focus-within:border-[var(--green)] transition-colors">
+          {/* Search — BIG */}
+          <form onSubmit={handleSearch} className={`w-full ${!data && !loading ? "max-w-2xl mt-10" : "max-w-3xl mt-2"}`}>
+            <div className={`flex border-2 border-[var(--surface-highest)] bg-[var(--white)] focus-within:border-[var(--green)] transition-colors ${!data && !loading ? "shadow-[0_4px_24px_rgba(0,0,0,0.06)]" : ""}`}>
               <input
                 type="text"
                 value={mint}
                 onChange={(e) => { setMint(e.target.value); setError(""); }}
                 placeholder="Paste Bags CA here..."
-                className="flex-1 bg-transparent px-5 py-4 text-[14px] text-[var(--text)] placeholder:text-[var(--text-dim)] outline-none font-mono"
+                className={`flex-1 bg-transparent text-[var(--text)] placeholder:text-[var(--text-dim)] outline-none font-mono ${!data && !loading ? "px-6 py-5 text-[16px] md:text-[18px]" : "px-5 py-4 text-[14px]"}`}
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-[var(--green)] text-white font-bold px-6 md:px-8 text-[12px] uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] active:scale-95 transition-all disabled:opacity-50 shrink-0"
+                className={`bg-[var(--green)] text-white font-bold uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] active:scale-95 transition-all disabled:opacity-50 shrink-0 ${!data && !loading ? "px-8 md:px-10 text-[14px]" : "px-6 text-[12px]"}`}
               >
                 {loading ? "..." : "Check Fees"}
               </button>
             </div>
-            {error && <p className="mt-2 text-[12px] font-bold text-[var(--error)]">{error}</p>}
+            {error && <p className="mt-3 text-[12px] font-bold text-[var(--error)]">{error}</p>}
           </form>
 
-          {/* Powered by badge */}
+          {/* Powered by */}
           {!data && !loading && (
             <div className="mt-6 flex items-center gap-2 text-[11px] text-[var(--text-dim)]">
               Powered by{" "}
