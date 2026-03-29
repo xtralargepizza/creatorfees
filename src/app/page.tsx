@@ -240,11 +240,21 @@ export default function Home() {
             {error && <p className="mt-2 text-center text-[13px] font-bold text-[var(--error)]">{error}</p>}
           </form>
 
-          {/* Apps toggle on homepage */}
-          <button onClick={() => setAppsOpen(!appsOpen)}
-            className={`mt-10 px-6 py-2.5 text-[13px] font-bold uppercase tracking-[0.06em] border transition-colors ${appsOpen ? "bg-[var(--green)] text-white border-[var(--green)]" : "bg-[var(--card)] text-[var(--text-2)] border-[var(--border)] hover:border-[var(--green)] hover:text-[var(--green)]"}`}>
-            {appsOpen ? "Close Apps" : "Bags Apps"}
-          </button>
+          {/* Controls row */}
+          <div className="flex items-center gap-2 mt-8">
+            <button onClick={toggleTheme}
+              className="h-10 w-10 flex items-center justify-center border border-[var(--border)] bg-[var(--card)] hover:border-[var(--green)] hover:text-[var(--green)] text-[var(--text-2)] transition-colors">
+              {theme === "light" ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              )}
+            </button>
+            <button onClick={() => setAppsOpen(!appsOpen)}
+              className="h-10 px-5 border border-[var(--border)] bg-[var(--card)] text-[var(--text-2)] text-[12px] font-bold uppercase tracking-[0.06em] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors">
+              Bags Apps
+            </button>
+          </div>
           {!hasResults && appsOpen && <AppsPanel onClose={() => setAppsOpen(false)} />}
         </div>
       )}
@@ -476,16 +486,16 @@ function KPI({ label, value, unit, sub, accent }: { label: string; value: string
 function AppsPanel({ onClose }: { onClose: () => void }) {
   return (
     <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />
-      {/* Panel */}
-      <div className="fixed top-[52px] left-0 right-0 z-50 bg-[var(--card)] border-b border-[var(--border)] shadow-lg animate-slide-up">
-        <div className="mx-auto max-w-4xl px-4 py-5">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--text-2)]">Bags Apps</p>
-            <button onClick={onClose} className="text-[11px] font-bold text-[var(--text-3)] hover:text-[var(--text)] uppercase tracking-[0.06em]">Close</button>
+      <div className="fixed inset-0 z-[70] bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 pointer-events-none">
+        <div className="bg-[var(--card)] border border-[var(--border)] shadow-2xl w-full max-w-lg pointer-events-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+            <p className="text-[13px] font-bold text-[var(--text)]">Bags Apps</p>
+            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-[var(--text-3)] hover:text-[var(--text)] transition-colors">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          <div className="p-4 grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
             {QUICK_LINKS.map(l => (
               <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
                 className="border border-[var(--border)] bg-[var(--bg)] p-3 hover:border-[var(--green)] transition-colors group">
@@ -493,6 +503,12 @@ function AppsPanel({ onClose }: { onClose: () => void }) {
                 <p className="text-[10px] text-[var(--text-3)] mt-0.5 leading-snug">{l.desc}</p>
               </a>
             ))}
+          </div>
+          <div className="p-3 border-t border-[var(--border)]">
+            <a href="https://bags.fm/launch?ref=crisnewtonx" target="_blank" rel="noopener noreferrer"
+              className="block w-full bg-[var(--green)] text-white text-center font-bold py-2.5 text-[12px] uppercase tracking-[0.06em] hover:bg-[var(--green-hover)] transition-colors">
+              Launch a Token
+            </a>
           </div>
         </div>
       </div>
