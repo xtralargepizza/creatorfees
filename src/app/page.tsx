@@ -14,17 +14,6 @@ interface TokenData {
 }
 interface Toast { id: number; message: string; amount: string; exiting?: boolean; }
 
-interface PopularToken {
-  name: string;
-  symbol: string;
-  image: string;
-  tokenMint: string;
-  status: string;
-  twitter: string | null;
-  website: string | null;
-  lifetimeFees: string | null;
-}
-
 function getEvents(raw: TokenData["claimEvents"]): ClaimEvent[] {
   if (Array.isArray(raw)) return raw;
   if (raw && typeof raw === "object" && "events" in raw) return raw.events;
@@ -43,29 +32,8 @@ function ago(ts: number): string {
   if (d < 86400) return `${Math.floor(d / 3600)}h ago`;
   return `${Math.floor(d / 86400)}d ago`;
 }
-
 function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text).catch(() => {});
-}
-
-function statusLabel(status: string): string {
-  switch (status) {
-    case "MIGRATED": return "GRADUATED";
-    case "PRE_GRAD": return "BONDING CURVE";
-    case "MIGRATING": return "MIGRATING";
-    case "PRE_LAUNCH": return "PRE-LAUNCH";
-    default: return status;
-  }
-}
-
-function statusColor(status: string): string {
-  switch (status) {
-    case "MIGRATED": return "bg-[var(--green-10)] text-[#00A020]";
-    case "PRE_GRAD": return "bg-[#FFF3CD] text-[#856404]";
-    case "MIGRATING": return "bg-[#D1ECF1] text-[#0C5460]";
-    case "PRE_LAUNCH": return "bg-[var(--surface)] text-[var(--text-variant)]";
-    default: return "bg-[var(--surface)] text-[var(--text-variant)]";
-  }
 }
 
 export default function Home() {
@@ -78,53 +46,7 @@ export default function Home() {
   const prevEventsRef = useRef<string[]>([]);
   const toastId = useRef(0);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Popular tokens state
-  const [popularTokens, setPopularTokens] = useState<PopularToken[]>([]);
-  const [popularLoading, setPopularLoading] = useState(true);
-  const [copiedMint, setCopiedMint] = useState<string | null>(null);
-
-  // Animated placeholder state
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [placeholderVisible, setPlaceholderVisible] = useState(true);
-
   const resultsRef = useRef<HTMLDivElement>(null);
-
-  // Fetch popular tokens on mount
-  useEffect(() => {
-    async function fetchPopular() {
-      try {
-        const res = await fetch("/api/popular");
-        const json = await res.json();
-        if (json.success && json.data) {
-          setPopularTokens(json.data);
-        }
-      } catch {
-        // silent fail
-      } finally {
-        setPopularLoading(false);
-      }
-    }
-    fetchPopular();
-  }, []);
-
-  // Rotate placeholder through popular token names
-  useEffect(() => {
-    if (popularTokens.length === 0) return;
-    const interval = setInterval(() => {
-      setPlaceholderVisible(false);
-      setTimeout(() => {
-        setPlaceholderIndex((prev) => (prev + 1) % popularTokens.length);
-        setPlaceholderVisible(true);
-      }, 300);
-    }, 2500);
-    return () => clearInterval(interval);
-  }, [popularTokens]);
-
-  const placeholderText =
-    popularTokens.length > 0
-      ? `Search $${popularTokens[placeholderIndex].symbol} \u2014 ${popularTokens[placeholderIndex].name}...`
-      : "Enter Solana token mint address...";
 
   const addToast = useCallback((message: string, amount: string) => {
     const id = ++toastId.current;
@@ -144,7 +66,6 @@ export default function Home() {
       if (!json.success) { setError(json.error || "Failed to load"); return; }
       setData(json.data);
 
-      // Check for new claim events -> toast
       const events = getEvents(json.data.claimEvents);
       const sigs = events.map((e: ClaimEvent) => e.signature);
       if (prevEventsRef.current.length > 0) {
@@ -156,7 +77,6 @@ export default function Home() {
       }
       prevEventsRef.current = sigs;
 
-      // Scroll to results after a brief delay
       if (!isPolling) {
         setTimeout(() => {
           resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -169,7 +89,6 @@ export default function Home() {
     }
   }, [addToast]);
 
-  // Poll for new events every 15s when we have a token loaded
   useEffect(() => {
     if (!data?.tokenMint) return;
     pollRef.current = setInterval(() => fetchToken(data.tokenMint, true), 15000);
@@ -180,7 +99,7 @@ export default function Home() {
     e.preventDefault();
     const trimmed = mint.trim();
     if (!trimmed || trimmed.length < 32 || trimmed.length > 44) {
-      setError("Enter a valid Solana token mint address");
+      setError("Enter a valid Bags token address");
       return;
     }
     prevEventsRef.current = [];
@@ -194,19 +113,6 @@ export default function Home() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleTokenClick = (token: PopularToken) => {
-    setMint(token.tokenMint);
-    prevEventsRef.current = [];
-    fetchToken(token.tokenMint);
-  };
-
-  const handleCopyCA = (e: React.MouseEvent, tokenMint: string) => {
-    e.stopPropagation();
-    copyToClipboard(tokenMint);
-    setCopiedMint(tokenMint);
-    setTimeout(() => setCopiedMint(null), 1500);
-  };
-
   const feesLam = data?.lifetimeFees ? parseInt(data.lifetimeFees) : 0;
   const events = data ? getEvents(data.claimEvents) : [];
   const totalClaimed = data?.claimStats.reduce((s, c) => s + parseInt(c.totalClaimed || "0"), 0) || 0;
@@ -214,11 +120,9 @@ export default function Home() {
   const claimPct = feesLam > 0 ? (totalClaimed / feesLam) * 100 : 0;
   const creator = data?.creators.find(c => c.isCreator) || data?.creators[0];
 
-  const showBrowse = !data && !loading;
-
   return (
     <>
-      {/* Toast Container */}
+      {/* Toasts */}
       <div className="fixed top-20 right-5 z-50 space-y-2 w-80">
         {toasts.map(t => (
           <div key={t.id} className={`${t.exiting ? "toast-exit" : "toast-enter"} flex items-center gap-3 bg-[var(--white)] border-l-4 border-[var(--green)] p-4 shadow-lg`}>
@@ -233,57 +137,49 @@ export default function Home() {
         ))}
       </div>
 
-      <div className="flex flex-col items-center px-4 min-h-[calc(100dvh-120px)]">
-        {/* Hero */}
-        <div className="mt-8 mb-6 text-center">
-          <img src="/logo.svg" alt="BagsScan" className="mx-auto h-12 mb-4" />
-          <h1 className="text-[32px] md:text-[42px] lg:text-[52px] font-bold leading-[1.05] tracking-tighter text-[var(--text)]">
-            Fee Revenue <span className="text-[var(--green)]">Dashboard</span>
-          </h1>
-          <p className="mt-3 text-[13px] text-[var(--text-variant)] max-w-md mx-auto leading-relaxed">
-            Paste a token mint address to see lifetime fees, claim history, and creator analytics.
+      <div className="flex flex-col items-center px-4">
+        {/* Hero — centered vertically when no results */}
+        <div className={`flex flex-col items-center justify-center text-center w-full ${!data && !loading ? "min-h-[60vh]" : "mt-8 mb-6"}`}>
+          <img src="/logo.svg" alt="CreatorFees" className="mx-auto h-20 md:h-28 lg:h-32 mb-6" />
+          <p className="text-[14px] md:text-[16px] text-[var(--text-variant)] max-w-md mx-auto leading-relaxed mb-8">
+            Paste a Bags CA to see creator fees, claim history, and analytics instantly.
           </p>
-        </div>
 
-        {/* Search */}
-        <form onSubmit={handleSearch} className="w-full max-w-2xl mb-8">
-          <div className="flex border-2 border-[var(--surface-highest)] bg-[var(--white)] focus-within:border-[var(--green)] transition-colors relative">
-            <div className="flex-1 relative">
+          {/* Search */}
+          <form onSubmit={handleSearch} className="w-full max-w-xl">
+            <div className="flex border-2 border-[var(--surface-highest)] bg-[var(--white)] focus-within:border-[var(--green)] transition-colors">
               <input
                 type="text"
                 value={mint}
                 onChange={(e) => { setMint(e.target.value); setError(""); }}
-                className="w-full bg-transparent px-5 py-4 text-[14px] text-[var(--text)] outline-none font-mono relative z-10"
-                style={{ background: "transparent" }}
+                placeholder="Paste Bags CA here..."
+                className="flex-1 bg-transparent px-5 py-4 text-[14px] text-[var(--text)] placeholder:text-[var(--text-dim)] outline-none font-mono"
               />
-              {/* Animated placeholder */}
-              {!mint && (
-                <span
-                  className="absolute left-5 top-1/2 -translate-y-1/2 text-[14px] text-[var(--text-dim)] font-mono pointer-events-none select-none z-0 whitespace-nowrap overflow-hidden"
-                  style={{
-                    opacity: placeholderVisible ? 1 : 0,
-                    transition: "opacity 0.3s ease-in-out",
-                    maxWidth: "calc(100% - 2.5rem)",
-                  }}
-                >
-                  {placeholderText}
-                </span>
-              )}
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-[var(--green)] text-white font-bold px-6 md:px-8 text-[12px] uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] active:scale-95 transition-all disabled:opacity-50 shrink-0"
+              >
+                {loading ? "..." : "Check Fees"}
+              </button>
             </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-[var(--green)] text-white font-bold px-8 text-[12px] uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] active:scale-95 transition-all disabled:opacity-50 shrink-0"
-            >
-              {loading ? "..." : "Check Fees"}
-            </button>
-          </div>
-          {error && <p className="mt-2 text-[12px] font-bold text-[var(--error)]">{error}</p>}
-        </form>
+            {error && <p className="mt-2 text-[12px] font-bold text-[var(--error)]">{error}</p>}
+          </form>
 
-        {/* Loading skeleton */}
+          {/* Powered by badge */}
+          {!data && !loading && (
+            <div className="mt-6 flex items-center gap-2 text-[11px] text-[var(--text-dim)]">
+              Powered by{" "}
+              <a href="https://bags.fm/?ref=crisnewtonx" target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--green)] hover:underline">
+                Bags.fm API
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Loading */}
         {loading && (
-          <div className="w-full max-w-5xl space-y-4">
+          <div className="w-full max-w-3xl space-y-4 mt-4">
             <div className="h-28 bg-[var(--surface-low)] animate-pulse" />
             <div className="grid grid-cols-3 gap-3">
               {[1,2,3].map(i => <div key={i} className="h-24 bg-[var(--surface-low)] animate-pulse" />)}
@@ -293,10 +189,10 @@ export default function Home() {
 
         {/* Results */}
         {data && !loading && (
-          <div ref={resultsRef} className="w-full max-w-5xl animate-slide-up">
+          <div ref={resultsRef} className="w-full max-w-3xl animate-slide-up mb-12">
             {/* Big Fee Display */}
-            <div className="bg-[var(--white)] border border-[var(--surface)] p-6 md:p-8 mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-5">
+            <div className="bg-[var(--white)] border border-[var(--surface)] p-6 md:p-8 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
                 {creator?.pfp && <img src={creator.pfp} alt="" className="w-12 h-12" />}
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-variant)] mb-1">Lifetime Fees</p>
@@ -312,15 +208,15 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="shrink-0 bg-[var(--green)] text-white font-bold py-3 px-5 text-[11px] uppercase tracking-[0.08em] hover:bg-[var(--green-hover)] transition-colors"
               >
-                Bags.fm
+                View on Bags.fm
               </a>
             </div>
 
-            {/* Stats Row */}
+            {/* Stats */}
             <div className="grid grid-cols-3 gap-3 mb-6">
-              <Stat label="Claimed" value={totalClaimed > 0 ? `${fmtSol(totalClaimed)}` : "0"} unit="SOL" />
-              <Stat label="Unclaimed" value={unclaimed > 0 ? `${fmtSol(unclaimed)}` : "0"} unit="SOL" warn={unclaimed > 0} />
-              <Stat label="Events" value={String(events.length)} sub={events.length > 0 ? ago(events[0].timestamp) : "No claims yet"} />
+              <Stat label="Claimed" value={totalClaimed > 0 ? fmtSol(totalClaimed) : "0"} unit="SOL" />
+              <Stat label="Unclaimed" value={unclaimed > 0 ? fmtSol(unclaimed) : "0"} unit="SOL" warn={unclaimed > 0} />
+              <Stat label="Events" value={String(events.length)} sub={events.length > 0 ? ago(events[0].timestamp) : "None"} />
             </div>
 
             {/* Progress */}
@@ -359,7 +255,7 @@ export default function Home() {
                           <p className="text-[11px] text-[var(--text-dim)] mt-0.5">{(c.royaltyBps / 100).toFixed(0)}% share</p>
                         </div>
                       </div>
-                      <span className="font-mono text-[11px] text-[var(--text-dim)]">{c.wallet.slice(0, 6)}...{c.wallet.slice(-4)}</span>
+                      <span className="hidden sm:inline font-mono text-[11px] text-[var(--text-dim)]">{c.wallet.slice(0, 6)}...{c.wallet.slice(-4)}</span>
                     </div>
                   ))}
                 </div>
@@ -397,183 +293,20 @@ export default function Home() {
             {feesLam === 0 && data.creators.length === 0 && events.length === 0 && (
               <div className="bg-[var(--surface-low)] p-10 text-center">
                 <p className="text-[14px] font-bold text-[var(--text-variant)]">No fee data found</p>
-                <p className="text-[12px] text-[var(--text-dim)] mt-2">This token may be new or not a Bags token.</p>
+                <p className="text-[12px] text-[var(--text-dim)] mt-2">This token may be new or not on Bags.</p>
               </div>
             )}
 
-            {/* Mint address with copy */}
-            <div className="mt-6 mb-4 flex items-center justify-center gap-2">
+            {/* Mint + Copy */}
+            <div className="mt-6 flex items-center justify-center gap-2">
               <p className="font-mono text-[11px] text-[var(--text-dim)] break-all">{data.tokenMint}</p>
               <button
                 onClick={handleCopyMint}
-                className="shrink-0 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--text-dim)] border border-[var(--surface)] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors"
+                className="shrink-0 px-2 py-1 text-[10px] font-bold uppercase text-[var(--text-dim)] border border-[var(--surface)] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors"
               >
                 {copied ? "Copied" : "Copy"}
               </button>
             </div>
-          </div>
-        )}
-
-        {/* Browse Top Tokens */}
-        {showBrowse && (
-          <div className="w-full max-w-5xl mb-8">
-            <div className="flex items-baseline gap-3 mb-4">
-              <h2 className="text-[14px] font-bold uppercase tracking-[0.1em] text-[var(--text)]">
-                Top Bags Tokens
-              </h2>
-              <span className="text-[11px] text-[var(--text-dim)] font-medium">by fees</span>
-            </div>
-
-            {/* Loading skeleton */}
-            {popularLoading && (
-              <div className="space-y-2">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-16 bg-[var(--surface-low)] animate-pulse" />
-                ))}
-              </div>
-            )}
-
-            {/* Desktop table layout */}
-            {!popularLoading && popularTokens.length > 0 && (
-              <>
-                {/* Desktop */}
-                <div className="hidden md:block">
-                  {/* Header */}
-                  <div className="grid grid-cols-[1fr_140px_160px_80px] gap-4 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-dim)] border-b border-[var(--surface)]">
-                    <span>Token</span>
-                    <span>Status</span>
-                    <span className="text-right">Lifetime Fees</span>
-                    <span className="text-center">CA</span>
-                  </div>
-                  {/* Rows */}
-                  <div className="space-y-0">
-                    {popularTokens.map((token) => (
-                      <button
-                        key={token.tokenMint}
-                        onClick={() => handleTokenClick(token)}
-                        className="w-full grid grid-cols-[1fr_140px_160px_80px] gap-4 items-center px-4 py-3 bg-[var(--white)] border border-[var(--surface)] border-t-0 first:border-t hover:bg-[var(--surface-low)] transition-colors text-left cursor-pointer"
-                      >
-                        {/* Token info */}
-                        <div className="flex items-center gap-3 min-w-0">
-                          {token.image ? (
-                            <img src={token.image} alt="" className="w-10 h-10 shrink-0 object-cover bg-[var(--surface-low)]" />
-                          ) : (
-                            <div className="w-10 h-10 shrink-0 bg-[var(--green-10)] flex items-center justify-center text-[14px] font-bold text-[var(--green)]">
-                              {token.symbol.charAt(0)}
-                            </div>
-                          )}
-                          <div className="min-w-0">
-                            <p className="text-[13px] font-bold text-[var(--text)] truncate">{token.name}</p>
-                            <p className="text-[11px] text-[var(--text-dim)]">${token.symbol}</p>
-                          </div>
-                        </div>
-
-                        {/* Status */}
-                        <div>
-                          <span className={`inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${statusColor(token.status)}`}>
-                            {statusLabel(token.status)}
-                          </span>
-                        </div>
-
-                        {/* Fees */}
-                        <div className="text-right">
-                          {token.lifetimeFees !== null ? (
-                            <span className="text-[14px] font-bold text-[var(--text)]">
-                              {fmtSol(parseInt(token.lifetimeFees))}{" "}
-                              <span className="text-[11px] text-[var(--text-variant)]">SOL</span>
-                            </span>
-                          ) : (
-                            <span className="text-[13px] text-[var(--text-dim)]">&mdash;</span>
-                          )}
-                        </div>
-
-                        {/* Copy CA */}
-                        <div className="text-center">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={(e) => handleCopyCA(e, token.tokenMint)}
-                            onKeyDown={(e) => { if (e.key === "Enter") handleCopyCA(e as unknown as React.MouseEvent, token.tokenMint); }}
-                            className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--text-dim)] border border-[var(--surface)] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors"
-                          >
-                            {copiedMint === token.tokenMint ? "Copied!" : (
-                              <>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
-                                  <rect x="9" y="9" width="13" height="13" />
-                                  <path d="M5 15H4V4h11v1" />
-                                </svg>
-                              </>
-                            )}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Mobile card layout */}
-                <div className="md:hidden space-y-2">
-                  {popularTokens.map((token) => (
-                    <button
-                      key={token.tokenMint}
-                      onClick={() => handleTokenClick(token)}
-                      className="w-full bg-[var(--white)] border border-[var(--surface)] p-4 hover:bg-[var(--surface-low)] transition-colors text-left cursor-pointer"
-                    >
-                      <div className="flex items-start gap-3">
-                        {token.image ? (
-                          <img src={token.image} alt="" className="w-10 h-10 shrink-0 object-cover bg-[var(--surface-low)]" />
-                        ) : (
-                          <div className="w-10 h-10 shrink-0 bg-[var(--green-10)] flex items-center justify-center text-[14px] font-bold text-[var(--green)]">
-                            {token.symbol.charAt(0)}
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="text-[13px] font-bold text-[var(--text)] truncate">{token.name}</p>
-                              <p className="text-[11px] text-[var(--text-dim)]">${token.symbol}</p>
-                            </div>
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              onClick={(e) => handleCopyCA(e, token.tokenMint)}
-                              onKeyDown={(e) => { if (e.key === "Enter") handleCopyCA(e as unknown as React.MouseEvent, token.tokenMint); }}
-                              className="shrink-0 px-2 py-1 text-[10px] font-bold uppercase text-[var(--text-dim)] border border-[var(--surface)] hover:border-[var(--green)] hover:text-[var(--green)] transition-colors"
-                            >
-                              {copiedMint === token.tokenMint ? "Copied!" : (
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
-                                  <rect x="9" y="9" width="13" height="13" />
-                                  <path d="M5 15H4V4h11v1" />
-                                </svg>
-                              )}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className={`inline-block px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${statusColor(token.status)}`}>
-                              {statusLabel(token.status)}
-                            </span>
-                            {token.lifetimeFees !== null ? (
-                              <span className="text-[13px] font-bold text-[var(--text)]">
-                                {fmtSol(parseInt(token.lifetimeFees))}{" "}
-                                <span className="text-[10px] text-[var(--text-variant)]">SOL</span>
-                              </span>
-                            ) : (
-                              <span className="text-[12px] text-[var(--text-dim)]">&mdash;</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {!popularLoading && popularTokens.length === 0 && (
-              <div className="bg-[var(--surface-low)] p-8 text-center">
-                <p className="text-[13px] text-[var(--text-dim)]">Could not load popular tokens.</p>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -585,8 +318,8 @@ function Stat({ label, value, unit, sub, warn }: { label: string; value: string;
   return (
     <div className="bg-[var(--white)] border border-[var(--surface)] p-5 md:p-6">
       <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--text-dim)] mb-1">{label}</p>
-      <p className={`text-[24px] md:text-[32px] font-bold ${warn ? "text-[#B08C00]" : "text-[var(--text)]"}`}>
-        {value} {unit && <span className="text-[14px] md:text-[16px] text-[var(--text-variant)]">{unit}</span>}
+      <p className={`text-[20px] md:text-[28px] font-bold ${warn ? "text-[#B08C00]" : "text-[var(--text)]"}`}>
+        {value} {unit && <span className="text-[12px] md:text-[14px] text-[var(--text-variant)]">{unit}</span>}
       </p>
       {sub && <p className="text-[10px] text-[var(--text-dim)] mt-1">{sub}</p>}
     </div>
