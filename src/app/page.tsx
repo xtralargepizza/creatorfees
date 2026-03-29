@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "./ThemeProvider";
 
 interface Creator {
   username: string; pfp: string; provider: string; twitterUsername: string;
@@ -56,6 +57,7 @@ const QUICK_LINKS = [
 
 export default function Home() {
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
   const [mint, setMint] = useState("");
   const [data, setData] = useState<TokenData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -186,6 +188,14 @@ export default function Home() {
                 {loading ? "..." : "Go"}
               </button>
             </form>
+            <button onClick={toggleTheme}
+              className="shrink-0 w-10 h-10 flex items-center justify-center border border-[var(--border)] bg-[var(--card)] hover:border-[var(--green)] hover:text-[var(--green)] text-[var(--text-2)]">
+              {theme === "light" ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              )}
+            </button>
             <button onClick={() => setAppsOpen(!appsOpen)}
               className={`shrink-0 h-10 px-4 border text-[12px] font-bold uppercase tracking-[0.06em] transition-colors ${appsOpen ? "bg-[var(--green)] text-white border-[var(--green)]" : "bg-[var(--card)] text-[var(--text-2)] border-[var(--border)] hover:border-[var(--green)] hover:text-[var(--green)]"}`}>
               Apps
@@ -193,10 +203,10 @@ export default function Home() {
             <a href="/" className="shrink-0 hidden md:block"><img src="/logo.svg" alt="" className="h-5" /></a>
           </div>
           {error && <p className="mx-auto max-w-4xl px-4 pb-2 text-[11px] font-bold text-[var(--error)]">{error}</p>}
-          {/* Apps dropdown */}
-          {appsOpen && <AppsPanel onClose={() => setAppsOpen(false)} />}
         </div>
       )}
+      {/* Apps overlay (outside sticky nav) */}
+      {hasResults && appsOpen && <AppsPanel onClose={() => setAppsOpen(false)} />}
 
       {/* ═══ HERO (before search) ═══ */}
       {!hasResults && (
@@ -235,11 +245,7 @@ export default function Home() {
             className={`mt-10 px-6 py-2.5 text-[13px] font-bold uppercase tracking-[0.06em] border transition-colors ${appsOpen ? "bg-[var(--green)] text-white border-[var(--green)]" : "bg-[var(--card)] text-[var(--text-2)] border-[var(--border)] hover:border-[var(--green)] hover:text-[var(--green)]"}`}>
             {appsOpen ? "Close Apps" : "Bags Apps"}
           </button>
-          {appsOpen && (
-            <div className="w-full max-w-3xl mt-4">
-              <AppsPanel onClose={() => setAppsOpen(false)} />
-            </div>
-          )}
+          {!hasResults && appsOpen && <AppsPanel onClose={() => setAppsOpen(false)} />}
         </div>
       )}
 
@@ -448,18 +454,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Bags Apps below results */}
-          <div className="mt-8 border-t border-[var(--border)] pt-5">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {QUICK_LINKS.slice(0, 8).map(l => (
-                <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
-                  className="bg-[var(--card)] border border-[var(--border)] p-3 hover:border-[var(--green)] transition-colors group">
-                  <p className="text-[12px] font-bold text-[var(--text)] group-hover:text-[var(--green)]">{l.label}</p>
-                  <p className="text-[10px] text-[var(--text-3)] mt-0.5">{l.desc}</p>
-                </a>
-              ))}
-            </div>
-          </div>
         </div>
       )}
     </>
@@ -481,22 +475,27 @@ function KPI({ label, value, unit, sub, accent }: { label: string; value: string
 
 function AppsPanel({ onClose }: { onClose: () => void }) {
   return (
-    <div className="border-t border-[var(--border)] bg-[var(--card)]">
-      <div className="mx-auto max-w-4xl px-4 py-5">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--text-2)]">Bags Apps</p>
-          <button onClick={onClose} className="text-[11px] font-bold text-[var(--text-3)] hover:text-[var(--text)] uppercase tracking-[0.06em]">Close</button>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-          {QUICK_LINKS.map(l => (
-            <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
-              className="border border-[var(--border)] bg-[var(--bg)] p-3 hover:border-[var(--green)] transition-colors group">
-              <p className="text-[12px] font-bold text-[var(--text)] group-hover:text-[var(--green)]">{l.label}</p>
-              <p className="text-[10px] text-[var(--text-3)] mt-0.5 leading-snug">{l.desc}</p>
-            </a>
-          ))}
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />
+      {/* Panel */}
+      <div className="fixed top-[52px] left-0 right-0 z-50 bg-[var(--card)] border-b border-[var(--border)] shadow-lg animate-slide-up">
+        <div className="mx-auto max-w-4xl px-4 py-5">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--text-2)]">Bags Apps</p>
+            <button onClick={onClose} className="text-[11px] font-bold text-[var(--text-3)] hover:text-[var(--text)] uppercase tracking-[0.06em]">Close</button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {QUICK_LINKS.map(l => (
+              <a key={l.href} href={`${l.href}?ref=crisnewtonx`} target="_blank" rel="noopener noreferrer"
+                className="border border-[var(--border)] bg-[var(--bg)] p-3 hover:border-[var(--green)] transition-colors group">
+                <p className="text-[12px] font-bold text-[var(--text)] group-hover:text-[var(--green)]">{l.label}</p>
+                <p className="text-[10px] text-[var(--text-3)] mt-0.5 leading-snug">{l.desc}</p>
+              </a>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

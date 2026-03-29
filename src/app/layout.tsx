@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import UnicornBg from "./UnicornBg";
+import ThemeProvider from "./ThemeProvider";
 
 export const metadata: Metadata = {
   title: "CreatorFees.xyz — Bags Fee Dashboard",
@@ -28,14 +29,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col antialiased">
-        <UnicornBg />
-        <main className="flex-1 w-full relative z-10">{children}</main>
-        <footer className="mt-auto w-full border-t border-[var(--border)] py-4 relative z-10">
-          <div className="mx-auto max-w-4xl px-4 flex items-center justify-between text-[11px] text-[var(--text-3)]">
-            <a href="https://creatorfees.xyz" className="font-semibold hover:text-[var(--green)]">CreatorFees.xyz</a>
-            <a href="https://x.com/crisnewtonx" target="_blank" className="font-semibold hover:text-[var(--green)]">@crisnewtonx</a>
-          </div>
-        </footer>
+        <ThemeProvider>
+          <UnicornBg />
+          <main className="flex-1 w-full relative z-10">{children}</main>
+          <footer className="mt-auto w-full border-t border-[var(--border)] py-4 relative z-10">
+            <div className="mx-auto max-w-4xl px-4 flex items-center justify-between text-[11px] text-[var(--text-3)]">
+              <a href="https://creatorfees.xyz" className="font-semibold hover:text-[var(--green)]">CreatorFees.xyz</a>
+              <a href="https://x.com/crisnewtonx" target="_blank" className="font-semibold hover:text-[var(--green)]">@crisnewtonx</a>
+            </div>
+          </footer>
+        </ThemeProvider>
       </body>
     </html>
   );

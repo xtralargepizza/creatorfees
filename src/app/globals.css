@@ -19,6 +19,21 @@
   --error: #D32F2F;
 }
 
+[data-theme="dark"] {
+  --green: #00D62B;
+  --green-hover: #00C025;
+  --green-10: rgba(0, 214, 43, 0.12);
+  --bg: #0D0D0F;
+  --card: #1A1A1E;
+  --card-hover: #222226;
+  --border: #2A2A2E;
+  --border-light: #333338;
+  --text: #E8E8EA;
+  --text-2: #8E8E93;
+  --text-3: #5A5A5E;
+  --error: #FF4444;
+}
+
 html, body { min-height: 100dvh; }
 body {
   background: var(--bg);
