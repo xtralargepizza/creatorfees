@@ -4,8 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "BagsScan — Fee Revenue Dashboard",
   description:
-    "Real-time fee analytics and revenue tracking for Bags.fm token creators. Track lifetime fees, claim history, and token performance.",
-  keywords: ["bags", "bags.fm", "solana", "fee revenue", "token analytics", "dashboard"],
+    "Real-time fee analytics and revenue tracking for Bags.fm token creators.",
 };
 
 export default function RootLayout({
@@ -14,79 +13,72 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className="min-h-screen antialiased">
-        <nav className="fixed top-0 z-50 w-full border-b border-[var(--border)] bg-[var(--bg-primary)]/80 backdrop-blur-xl">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-            <a href="/" className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-blue-500">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        {/* Nav */}
+        <nav className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/90 backdrop-blur-md">
+          <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4">
+            <a href="/" className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center bg-[var(--green)]">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2L2 7l10 5 10-5-10-5z" />
                   <path d="M2 17l10 5 10-5" />
                   <path d="M2 12l10 5 10-5" />
                 </svg>
               </div>
-              <span className="text-lg font-bold tracking-tight">
-                Bags<span className="text-purple-400">Scan</span>
+              <span className="text-sm font-bold tracking-tight text-[var(--text)]">
+                BagsScan
               </span>
             </a>
 
-            <div className="flex items-center gap-1">
-              <a
-                href="/"
-                className="rounded-lg px-3.5 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
-              >
-                Dashboard
-              </a>
-              <a
-                href="/feed"
-                className="rounded-lg px-3.5 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-card)] hover:text-[var(--text-primary)]"
-              >
-                Launch Feed
-              </a>
+            <div className="flex items-center gap-0.5">
+              <NavLink href="/">Dashboard</NavLink>
+              <NavLink href="/feed">Feed</NavLink>
               <a
                 href="https://bags.fm/?ref=crisnewtonx"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-2 rounded-lg bg-purple-500/10 px-3.5 py-2 text-sm font-medium text-purple-400 transition-colors hover:bg-purple-500/20"
+                className="btn-primary ml-3 text-[10px] py-1.5 px-3"
               >
-                Open Bags.fm
+                Open Bags
               </a>
             </div>
           </div>
         </nav>
 
-        <main className="mx-auto max-w-7xl px-6 pt-24 pb-16">{children}</main>
+        <main className="mx-auto max-w-6xl px-4 pt-8 pb-16">{children}</main>
 
-        <footer className="border-t border-[var(--border)] py-8">
-          <div className="mx-auto max-w-7xl px-6 text-center text-sm text-[var(--text-secondary)]">
-            BagsScan — Built for the{" "}
-            <a
-              href="https://bags.fm/hackathon"
-              className="text-purple-400 hover:underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Bags Hackathon
-            </a>{" "}
-            by{" "}
-            <a
-              href="https://x.com/crisnewtonx"
-              className="text-purple-400 hover:underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+        <footer className="border-t border-[var(--border)] py-6">
+          <div className="mx-auto max-w-6xl px-4 flex items-center justify-between text-[10px] text-[var(--text-tertiary)]">
+            <span>
+              Built for the{" "}
+              <a href="https://bags.fm/hackathon" target="_blank" rel="noopener noreferrer" className="text-[var(--link)] font-medium hover:underline">
+                Bags Hackathon
+              </a>
+            </span>
+            <a href="https://x.com/crisnewtonx" target="_blank" rel="noopener noreferrer" className="text-[var(--link)] font-medium hover:underline">
               @crisnewtonx
             </a>
           </div>
         </footer>
       </body>
     </html>
+  );
+}
+
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      className="px-3 py-1.5 text-[11px] font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text)]"
+    >
+      {children}
+    </a>
   );
 }

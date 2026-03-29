@@ -14,18 +14,18 @@ interface TokenLaunch {
   dbcPoolKey: string | null;
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  PRE_LAUNCH: { label: "Pre-Launch", color: "text-purple-400 bg-purple-400/10" },
-  PRE_GRAD: { label: "Bonding Curve", color: "text-yellow-400 bg-yellow-400/10" },
-  MIGRATING: { label: "Migrating", color: "text-blue-400 bg-blue-400/10" },
-  MIGRATED: { label: "Graduated", color: "text-green-400 bg-green-400/10" },
+const STATUS: Record<string, { label: string; cls: string }> = {
+  PRE_LAUNCH: { label: "PRE-LAUNCH", cls: "badge-purple" },
+  PRE_GRAD: { label: "BONDING CURVE", cls: "badge-yellow" },
+  MIGRATING: { label: "MIGRATING", cls: "badge-blue" },
+  MIGRATED: { label: "GRADUATED", cls: "badge-green" },
 };
 
 export default function FeedPage() {
   const [tokens, setTokens] = useState<TokenLaunch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState<string>("ALL");
+  const [filter, setFilter] = useState("ALL");
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   const fetchFeed = useCallback(async () => {
@@ -40,7 +40,7 @@ export default function FeedPage() {
         setError(json.error || "Failed to fetch feed");
       }
     } catch {
-      setError("Network error — could not reach API");
+      setError("Network error");
     } finally {
       setLoading(false);
     }
@@ -48,91 +48,84 @@ export default function FeedPage() {
 
   useEffect(() => {
     fetchFeed();
-    const interval = setInterval(fetchFeed, 30000); // Refresh every 30s
-    return () => clearInterval(interval);
+    const iv = setInterval(fetchFeed, 30000);
+    return () => clearInterval(iv);
   }, [fetchFeed]);
 
-  const filtered =
-    filter === "ALL" ? tokens : tokens.filter((t) => t.status === filter);
+  const filtered = filter === "ALL" ? tokens : tokens.filter((t) => t.status === filter);
 
   return (
     <div>
       {/* Header */}
-      <div className="mb-8 flex items-end justify-between">
+      <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Launch Feed</h1>
-          <p className="mt-1 text-[var(--text-secondary)]">
+          <h1 className="text-[28px] font-bold tracking-[-0.02em]">Launch Feed</h1>
+          <p className="mt-0.5 text-[11px] text-[var(--text-secondary)]">
             Real-time Bags token launches — auto-refreshes every 30s
           </p>
         </div>
         <div className="flex items-center gap-3">
           {lastUpdate && (
-            <span className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-              Updated {lastUpdate.toLocaleTimeString()}
+            <span className="flex items-center gap-1.5 text-[10px] text-[var(--text-tertiary)]">
+              <span className="h-1.5 w-1.5 bg-[var(--green)]" />
+              {lastUpdate.toLocaleTimeString()}
             </span>
           )}
           <button
             onClick={() => { setLoading(true); fetchFeed(); }}
-            className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm font-medium transition-colors hover:bg-[var(--bg-card-hover)]"
+            className="btn-secondary py-1 px-3 text-[10px]"
           >
-            Refresh
+            REFRESH
           </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="mb-6 flex gap-2">
-        {["ALL", "PRE_LAUNCH", "PRE_GRAD", "MIGRATING", "MIGRATED"].map(
-          (s) => (
+      <div className="mb-5 flex gap-[1px] bg-[var(--border)] w-fit">
+        {["ALL", "PRE_LAUNCH", "PRE_GRAD", "MIGRATING", "MIGRATED"].map((s) => {
+          const active = filter === s;
+          const label = s === "ALL" ? "ALL" : STATUS[s]?.label || s;
+          const count = s === "ALL" ? tokens.length : tokens.filter((t) => t.status === s).length;
+          return (
             <button
               key={s}
               onClick={() => setFilter(s)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
-                filter === s
-                  ? "bg-purple-500/20 text-purple-300 shadow-sm"
-                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-card)]"
+              className={`px-3 py-1.5 text-[10px] font-bold tracking-[0.04em] transition-colors ${
+                active
+                  ? "bg-[var(--text)] text-white"
+                  : "bg-[var(--bg-card)] text-[var(--text-secondary)] hover:bg-[var(--bg-card-hover)]"
               }`}
             >
-              {s === "ALL" ? "All" : STATUS_LABELS[s]?.label || s}
-              {s !== "ALL" && (
-                <span className="ml-1.5 text-xs opacity-60">
-                  {tokens.filter((t) => t.status === s).length}
-                </span>
-              )}
+              {label}
+              <span className="ml-1 opacity-50">{count}</span>
             </button>
-          )
-        )}
+          );
+        })}
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-[1px] bg-[var(--border)] md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-48 animate-pulse rounded-xl border border-[var(--border)] bg-[var(--bg-card)]"
-            />
+            <div key={i} className="h-36 animate-pulse bg-[var(--bg-card)]" />
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-8 text-center">
-          <p className="text-red-400">{error}</p>
+        <div className="border border-red-200 bg-red-50 p-8 text-center">
+          <p className="text-[12px] font-medium text-red-700">{error}</p>
           <button
             onClick={() => { setLoading(true); fetchFeed(); }}
-            className="mt-4 rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400 hover:bg-red-500/20"
+            className="btn-secondary mt-4 text-[10px] border-red-300 text-red-600"
           >
-            Retry
+            RETRY
           </button>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-12 text-center">
-          <p className="text-[var(--text-secondary)]">
-            No tokens found with this filter.
-          </p>
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-12 text-center">
+          <p className="text-[12px] text-[var(--text-secondary)]">No tokens with this filter.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-[1px] bg-[var(--border)] md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((token, i) => (
             <TokenCard key={token.tokenMint} token={token} index={i} />
           ))}
@@ -143,65 +136,52 @@ export default function FeedPage() {
 }
 
 function TokenCard({ token, index }: { token: TokenLaunch; index: number }) {
-  const status = STATUS_LABELS[token.status] || {
-    label: token.status,
-    color: "text-gray-400 bg-gray-400/10",
-  };
+  const status = STATUS[token.status] || { label: token.status, cls: "badge-gray" };
 
   return (
     <a
       href={`/token/${token.tokenMint}`}
-      className="animate-slide-up group rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5 transition-all hover:border-purple-500/30 hover:bg-[var(--bg-card-hover)] hover:shadow-lg hover:shadow-purple-500/5"
-      style={{ animationDelay: `${index * 50}ms` }}
+      className="animate-slide-up group bg-[var(--bg-card)] p-4 transition-colors hover:bg-[var(--bg-card-hover)]"
+      style={{ animationDelay: `${index * 40}ms` }}
     >
       <div className="flex items-start gap-3">
         {token.image ? (
           <img
             src={token.image}
             alt={token.name}
-            className="h-12 w-12 rounded-xl object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
+            className="h-10 w-10 object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
         ) : (
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-lg font-bold text-purple-400">
+          <div className="flex h-10 w-10 items-center justify-center bg-[var(--green-light)] text-[14px] font-bold text-[var(--green)]">
             {token.symbol?.charAt(0) || "?"}
           </div>
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="truncate font-semibold group-hover:text-purple-300 transition-colors">
+            <h3 className="truncate text-[12px] font-bold group-hover:text-[var(--green)] transition-colors">
               {token.name}
             </h3>
-            <span className="shrink-0 text-xs font-medium text-[var(--text-secondary)]">
+            <span className="shrink-0 text-[10px] font-medium text-[var(--text-tertiary)]">
               ${token.symbol}
             </span>
           </div>
           <div className="mt-1">
-            <span
-              className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${status.color}`}
-            >
-              {status.label}
-            </span>
+            <span className={`badge ${status.cls}`}>{status.label}</span>
           </div>
         </div>
       </div>
 
       {token.description && (
-        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+        <p className="mt-2.5 line-clamp-2 text-[11px] leading-[1.5] text-[var(--text-secondary)]">
           {token.description}
         </p>
       )}
 
-      <div className="mt-3 flex items-center gap-3">
-        {token.twitter && (
-          <span className="text-xs text-blue-400">Twitter</span>
-        )}
-        {token.website && (
-          <span className="text-xs text-green-400">Website</span>
-        )}
-        <span className="ml-auto font-mono text-xs text-[var(--text-secondary)]">
+      <div className="mt-2.5 flex items-center gap-2 text-[10px]">
+        {token.twitter && <span className="font-medium text-[var(--link)]">Twitter</span>}
+        {token.website && <span className="font-medium text-[var(--green)]">Website</span>}
+        <span className="ml-auto font-mono text-[var(--text-tertiary)]">
           {token.tokenMint.slice(0, 6)}...{token.tokenMint.slice(-4)}
         </span>
       </div>

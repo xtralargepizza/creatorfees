@@ -1,54 +1,134 @@
 @import "tailwindcss";
 
+/* ─── OpenRunde Font ──────────────────────────────── */
+@font-face {
+  font-family: 'OpenRunde';
+  src: url('/fonts/OpenRunde-Regular.woff2') format('woff2'),
+       url('/fonts/OpenRunde-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'OpenRunde';
+  src: url('/fonts/OpenRunde-Medium.woff2') format('woff2'),
+       url('/fonts/OpenRunde-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'OpenRunde';
+  src: url('/fonts/OpenRunde-Semibold.woff2') format('woff2'),
+       url('/fonts/OpenRunde-Semibold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'OpenRunde';
+  src: url('/fonts/OpenRunde-Bold.woff2') format('woff2'),
+       url('/fonts/OpenRunde-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─── Design Tokens ───────────────────────────────── */
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-card: #12121a;
-  --bg-card-hover: #1a1a25;
-  --border: #1e1e2e;
-  --text-primary: #e4e4e7;
-  --text-secondary: #71717a;
-  --accent-green: #22c55e;
-  --accent-red: #ef4444;
-  --accent-yellow: #eab308;
-  --accent-blue: #3b82f6;
-  --accent-purple: #8b5cf6;
+  --green: #00D62B;
+  --green-hover: #00C025;
+  --green-light: rgba(0, 214, 43, 0.06);
+  --green-medium: rgba(0, 214, 43, 0.12);
+  --bg: #F5F5EE;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #FAFAF6;
+  --bg-elevated: #FFFFF8;
+  --border: #E8E8E0;
+  --border-strong: #D0D0C8;
+  --text: #0D0D0F;
+  --text-secondary: #6B6B6F;
+  --text-tertiary: #A0A0A4;
+  --link: #1A1F2E;
 }
 
 body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'OpenRunde', system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-/* Grade badges */
-.grade-A { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
-.grade-B { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-.grade-C { color: #eab308; background: rgba(234, 179, 8, 0.1); }
-.grade-D { color: #f97316; background: rgba(249, 115, 22, 0.1); }
-.grade-F { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-
-/* Status badges */
-.status-PRE_LAUNCH { color: #8b5cf6; background: rgba(139, 92, 246, 0.1); }
-.status-PRE_GRAD { color: #eab308; background: rgba(234, 179, 8, 0.1); }
-.status-MIGRATING { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-.status-MIGRATED { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
-
-/* Animations */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
-  50% { box-shadow: 0 0 20px 4px rgba(139, 92, 246, 0.1); }
+/* ─── Reset border-radius per design system ──────── */
+*, *::before, *::after {
+  border-radius: 0 !important;
 }
 
-.live-pulse { animation: pulse-glow 2s ease-in-out infinite; }
+/* ─── Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); }
 
+/* ─── Buttons ─────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: #FFF;
+  font-family: 'OpenRunde', system-ui;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 8px 20px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.08s;
+  text-transform: uppercase;
+}
+.btn-primary:hover { background: var(--green-hover); }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text);
+  font-family: 'OpenRunde', system-ui;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 8px 20px;
+  border: 1.5px solid var(--border-strong);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.btn-secondary:hover { border-color: var(--text); background: var(--bg-card); }
+
+/* ─── Badges ──────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.badge-green { background: var(--green-light); color: #00A020; }
+.badge-yellow { background: rgba(234, 179, 8, 0.08); color: #A07800; }
+.badge-blue { background: rgba(59, 130, 246, 0.08); color: #2563EB; }
+.badge-purple { background: rgba(139, 92, 246, 0.08); color: #7C3AED; }
+.badge-gray { background: rgba(0,0,0,0.04); color: var(--text-secondary); }
+
+/* ─── Animations ──────────────────────────────────── */
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-.animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out forwards;
+}
